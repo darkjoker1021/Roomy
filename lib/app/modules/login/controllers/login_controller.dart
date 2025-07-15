@@ -3,7 +3,6 @@ import 'package:roomy/core/widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -17,70 +16,23 @@ class LoginController extends GetxController with StateMixin {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   var keepMeLoggedIn = false.obs;
+  
+  // Variabili per gestire il flusso di creazione/join casa
+  Map<String, dynamic>? houseData;
+  bool fromJoinHouse = false;
+  bool fromCreateHouse = false;
 
   @override
   void onInit() {
     super.onInit();
     change(null, status: RxStatus.success());
-  }
-
-  void setKeepMeLoggedIn(bool value) {
-    keepMeLoggedIn.value = value;
-  }
-  
-  Future<void> signInWithEmailPassword(BuildContext context) async {
-    change(null, status: RxStatus.loading());
-
-    if (loginFormKey.currentState!.validate() == false) {
-      change(null, status: RxStatus.success());
-      return;
+    
+    // Controlla se arriva da join house o create house
+    if (Get.arguments != null) {
+      houseData = Get.arguments['houseData'];
+      fromJoinHouse = Get.arguments['fromJoinHouse'] ?? false;
+      fromCreateHouse = Get.arguments['fromCreateHouse'] ?? false;
     }
-
-    try {
-      String email = emailController.text.trim();
-      String password = passwordController.text;
-
-      UserCredential authResult = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      User? user = authResult.user;
-
-      if (user != null) {
-        if (!user.emailVerified) {
-          _showErrorDialog("Devi prima verificare il tuo indirizzo email.\nControlla la tua casella di posta per verificare il tuo indirizzo email.");
-          _auth.signOut();
-          change(null, status: RxStatus.success());
-          return;
-        }
-
-        if (keepMeLoggedIn.value) {
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setBool("isLoggedIn", true);
-        }
-        
-        Get.offAndToNamed(Routes.MAIN);
-        change(null, status: RxStatus.success());
-
-        if (context.mounted) {
-          CustomSnackbar.showSuccessSnackbar(
-            context,
-            "Accesso effettuato con successo!",
-          );
-        }
-      } else {
-        _showErrorDialog("Credenziali non valide");
-      }
-    } on FirebaseAuthException catch (e) {
-      _showErrorDialog("Errore: ${e.code}");
-      change(null, status: RxStatus.success());
-    } catch (e) {
-      _showErrorDialog("Si è verificato un errore: ${e.toString()}");
-      change(null, status: RxStatus.success());
-    }
-
-    change(null, status: RxStatus.success());
   }
 
   Future<void> signInWithGoogle(BuildContext context) async {
@@ -105,17 +57,12 @@ class LoginController extends GetxController with StateMixin {
         await prefs.setBool("isLoggedIn", true);
 
         if (isNewUser) {
-          _saveUser(googleAccount);
+          await _saveUser(googleAccount);
         }
 
-        Get.offAndToNamed(Routes.MAIN);
+        // Gestisci il flusso dopo il login
+        await _handlePostLogin(context, user);
         
-        if (context.mounted) {
-          CustomSnackbar.showSuccessSnackbar(
-            context,
-            "Accesso effettuato con successo!",
-          );
-        }
       } else {
         _showErrorDialog("Errore durante l'accesso o la registrazione con Google");
       }
@@ -126,68 +73,60 @@ class LoginController extends GetxController with StateMixin {
     change(null, status: RxStatus.success());
   }
 
-  Future<void> _saveUser(GoogleSignInAccount account) async {
-    String uid = FirebaseAuth.instance.currentUser!.uid;
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection("users").doc(uid).get();
-
-    if (!userDoc.exists) {
-      DateTime? creationDate = _auth.currentUser!.metadata.creationTime;
-      DateFormat("dd/MM/yyyy").format(creationDate!);
-      var userNameSurname = account.displayName!.split(" ");
-      if (userNameSurname.length < 2) {
-        userNameSurname.add("");
-      }
-      FirebaseFirestore.instance.collection("users").doc(uid).set({
-        "uid": uid,
-        "name": userNameSurname[0],
-        "surname": userNameSurname[1],
-        "email": account.email,
-        "image": account.photoUrl,
-      });
+  Future<void> _handlePostLogin(BuildContext context, User user) async {
+    if (action == 'join' && houseData != null) {
+      // Unisci l'utente alla casa
+      await _joinHouse(context);
+    } else if (action == 'create') {
+      // Vai alla pagina di creazione casa
+      Get.offAndToNamed(Routes.CREATE_HOUSE);
+    } else {
+      // Comportamento normale
+      Get.offAndToNamed(Routes.MAIN);
     }
   }
+  Future<void> _joinUserToHouse(User user, Map<String, dynamic> houseData) async {
+    String houseId = houseData['id'];
+    
+    // Aggiungi l'utente alla collezione membri della casa
+    await FirebaseFirestore.instance.collection('houses').doc(houseId).collection('members').doc(user.uid).set({
+      'uid': user.uid,
+      'role': 'member',
+      'joinedAt': FieldValue.serverTimestamp(),
+    });
 
-    Future<void> forgotPassword() async {
-    try {
-      String email = emailController.text;
-
-      await _auth.sendPasswordResetEmail(email: email);
-
-      _showSuccessDialog("Email di reset della password inviata con successo. Controlla la tua casella di posta.");
-    } catch (e) {
-      _showErrorDialog("Errore durante l'invio dell'email di reset della password: $e");
-    }
+    // Aggiorna il profilo utente con l'ID della casa
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+      'houseId': houseId,
+      'role': 'member',
+    });
   }
+  Future<void> _saveUser(GoogleSignInAccount googleAccount) async {
+    User? currentUser = _auth.currentUser;
+    if (currentUser == null) return;
 
-    void _showSuccessDialog(String message) {
-      showDialog(
-        context: Get.context!,
-        builder: (context) => AlertDialog(
-          title: const Text("Successo"),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () => Get.back(),
-            ),
-          ],
-        )
-      );
+    // Salva i dati dell'utente nel database Firestore
+    await FirebaseFirestore.instance.collection('users').doc(currentUser.uid).set({
+      'uid': currentUser.uid,
+      'email': currentUser.email,
+      'displayName': googleAccount.displayName,
+      'photoUrl': googleAccount.photoUrl,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
   }
-
   void _showErrorDialog(String message) {
-    showDialog(
-      context: Get.context!,
-      builder: (context) => AlertDialog(
+    Get.dialog(
+      AlertDialog(
         title: const Text("Errore"),
         content: Text(message),
         actions: <Widget>[
           TextButton(
-            child: const Text("OK"),
             onPressed: () => Get.back(),
+            child: const Text("OK"),
           ),
         ],
-      )
+      ),
+      barrierDismissible: false,
     );
   }
 }

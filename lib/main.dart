@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
       title: "Roomy",
       locale: const Locale('it', 'IT'),
       fallbackLocale: const Locale('en', 'US'),
-      initialRoute: _isLoggedIn ? Routes.MAIN : Routes.LOGIN,
+      initialRoute: _isLoggedIn ? Routes.MAIN : Routes.HOUSE,
       getPages: AppPages.routes,
       debugShowCheckedModeBanner: false,
       defaultTransition: Transition.cupertino,
