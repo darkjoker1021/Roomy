@@ -62,7 +62,7 @@ class HouseView extends GetView<HouseController> {
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: controller.selectedOption.value == 'join'
-                            ? Palette.primaryColor.withOpacity(0.1)
+                            ? Palette.primaryColor.withValues(alpha: 0.1)
                             : Theme.of(context).colorScheme.secondary,
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(
@@ -118,7 +118,7 @@ class HouseView extends GetView<HouseController> {
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: controller.selectedOption.value == 'create'
-                            ? Palette.primaryColor.withOpacity(0.1)
+                            ? Palette.primaryColor.withValues(alpha: 0.1)
                             : Theme.of(context).colorScheme.secondary,
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(

@@ -49,7 +49,7 @@ class CreateHouseView extends GetView<CreateHouseController> {
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: Palette.primaryColor.withOpacity(0.1),
+                          color: Palette.primaryColor.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -118,7 +118,7 @@ class CreateHouseView extends GetView<CreateHouseController> {
                       width: Get.width,
                       padding: const EdgeInsets.all(15),
                       decoration: BoxDecoration(
-                        color: Palette.primaryColor.withOpacity(0.1),
+                        color: Palette.primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: Column(

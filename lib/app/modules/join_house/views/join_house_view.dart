@@ -48,7 +48,7 @@ class JoinHouseView extends GetView<JoinHouseController> {
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
-                        color: Palette.primaryColor.withOpacity(0.1),
+                        color: Palette.primaryColor.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(

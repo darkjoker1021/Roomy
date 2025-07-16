@@ -132,7 +132,7 @@ class TasksView extends GetView<TasksController> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: controller.getPriorityColor(task.priority).withOpacity(0.2),
+                    color: controller.getPriorityColor(task.priority).withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -403,7 +403,6 @@ class TasksView extends GetView<TasksController> {
                     description: descriptionController.text,
                     category: selectedCategory,
                     assignedTo: assignedToController.text,
-                    createdBy: 'current_user', // Dovrebbe essere l'utente corrente
                     dueDate: selectedDueDate,
                     priority: selectedPriority,
                   );
