@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:roomy/app/modules/account/views/account_view.dart';
 import 'package:roomy/app/modules/shopping/views/shopping_view.dart';
 import 'package:roomy/core/theme/palette.dart';
@@ -29,24 +28,21 @@ class MainView extends GetView<MainController> {
           icon: const Icon(FluentIcons.task_list_square_ltr_20_regular),
           activeColorPrimary: Palette.buttonColor,
           inactiveColorPrimary: Palette.labelColor,
-          title: "Tasks"
         ),
         PersistentBottomNavBarItem(
           icon: const Icon(FluentIcons.cart_20_regular),
           activeColorPrimary: Palette.buttonColor,
           inactiveColorPrimary: Palette.labelColor,
-          title: "Shopping"
         ),
         PersistentBottomNavBarItem(
           icon: const Icon(FluentIcons.person_20_regular),
           activeColorPrimary: Palette.buttonColor,
           inactiveColorPrimary: Palette.labelColor,
-          title: "Account"
         ),
       ],
       stateManagement: false,
       onWillPop: (p0) => exit(0),
-      navBarStyle: NavBarStyle.style12,
+      navBarStyle: NavBarStyle.style16,
       decoration: const NavBarDecoration(
         colorBehindNavBar: Colors.transparent,
         borderRadius: BorderRadius.all(Radius.circular(0)),

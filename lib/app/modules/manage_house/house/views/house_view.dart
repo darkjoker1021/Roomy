@@ -11,15 +11,35 @@ class HouseView extends GetView<HouseController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: BottomAppBar(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: Obx(() => CustomButton(
+          onPressed: controller.selectedOption.value == 'join'
+              ? controller.proceedToJoinHouse
+              : controller.selectedOption.value == 'create'
+                  ? controller.proceedToCreateHouse
+                  : () {},
+          text: controller.selectedOption.value == 'join'
+              ? "Entra con codice invito"
+              : controller.selectedOption.value == 'create'
+                  ? "Crea nuova casa"
+                  : "Seleziona un'opzione",
+          height: 55,
+          backgroundColor: controller.selectedOption.value.isNotEmpty
+              ? null
+              : Palette.labelColor,
+          borderColor: controller.selectedOption.value.isNotEmpty
+              ? null
+              : Palette.labelColor,
+        )),
+      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(15),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Spacer(),
-
               // Logo
               Image.asset(
                 "assets/logos/logo.png",
@@ -59,7 +79,7 @@ class HouseView extends GetView<HouseController> {
                     onTap: () => controller.selectJoinHouse(),
                     child: Container(
                       width: Get.width,
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(15),
                       decoration: BoxDecoration(
                         color: controller.selectedOption.value == 'join'
                             ? Palette.primaryColor.withValues(alpha: 0.1)
@@ -115,7 +135,7 @@ class HouseView extends GetView<HouseController> {
                     onTap: () => controller.selectCreateHouse(),
                     child: Container(
                       width: Get.width,
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(15),
                       decoration: BoxDecoration(
                         color: controller.selectedOption.value == 'create'
                             ? Palette.primaryColor.withValues(alpha: 0.1)
@@ -163,28 +183,6 @@ class HouseView extends GetView<HouseController> {
                       ),
                     ),
                   )),
-
-              const SizedBox(height: 40),
-
-              // Pulsante continua
-              Obx(() => CustomButton(
-                    onPressed: controller.selectedOption.value == 'join'
-                        ? controller.proceedToJoinHouse
-                        : controller.selectedOption.value == 'create'
-                            ? controller.proceedToCreateHouse
-                            : () {},
-                    text: controller.selectedOption.value == 'join'
-                        ? "Entra con codice invito"
-                        : controller.selectedOption.value == 'create'
-                            ? "Crea nuova casa"
-                            : "Seleziona un'opzione",
-                    height: 55,
-                    backgroundColor: controller.selectedOption.value.isNotEmpty
-                        ? null
-                        : Palette.labelColor,
-                  )),
-
-              const Spacer(),
             ],
           ),
         ),

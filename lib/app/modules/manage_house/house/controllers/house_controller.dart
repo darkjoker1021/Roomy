@@ -17,6 +17,6 @@ class HouseController extends GetxController {
   }
 
   void proceedToCreateHouse() {
-    Get.toNamed(Routes.LOGIN, arguments: {'action': 'create_house'});
+    Get.toNamed(Routes.LOGIN, arguments: {'action': 'create'});
   }
 }

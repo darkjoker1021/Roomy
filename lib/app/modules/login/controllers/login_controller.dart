@@ -108,7 +108,7 @@ class LoginController extends GetxController with StateMixin {
         // Unisci l'utente alla casa
         await _joinUserToHouse(user, houseData!);
         Get.offAndToNamed(Routes.MAIN);
-      } else if (action == 'create_house' || fromCreateHouse) {
+      } else if (action == 'create' || fromCreateHouse) {
         // Vai alla pagina di creazione casa
         Get.offAndToNamed(Routes.CREATE_HOUSE);
       } else {
@@ -142,10 +142,6 @@ class LoginController extends GetxController with StateMixin {
           .doc(user.uid)
           .set({
         'uid': user.uid,
-        'email': user.email,
-        'displayName': user.displayName,
-        'photoUrl': user.photoURL,
-        'role': 'member',
         'joinedAt': FieldValue.serverTimestamp(),
       });
 
@@ -155,8 +151,9 @@ class LoginController extends GetxController with StateMixin {
           .doc(user.uid)
           .update({
         'houseId': houseId,
-        'role': 'member',
-        'updatedAt': FieldValue.serverTimestamp(),
+        'email': user.email,
+        'name': user.displayName,
+        'uid': user.uid,
       });
 
       // Salva l'ID della casa nelle preferenze

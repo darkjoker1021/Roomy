@@ -54,21 +54,19 @@ class CreateHouseController extends GetxController with StateMixin {
         'inviteCode': inviteCode,
         'createdAt': FieldValue.serverTimestamp(),
         'createdBy': currentUser.uid,
-        'adminIds': [currentUser.uid],
+        'adminId': currentUser.uid,
         'memberIds': [currentUser.uid],
       });
 
       // Aggiunge l'utente come membro della casa
       await _firestore.collection('houses').doc(houseId).collection('members').doc(currentUser.uid).set({
         'uid': currentUser.uid,
-        'role': 'admin',
         'joinedAt': FieldValue.serverTimestamp(),
       });
 
       // Aggiorna il profilo utente con l'ID della casa
       await _firestore.collection('users').doc(currentUser.uid).update({
         'houseId': houseId,
-        'role': 'admin',
       });
 
       change(null, status: RxStatus.success());

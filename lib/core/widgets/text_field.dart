@@ -10,6 +10,8 @@ class CustomTextField extends StatelessWidget {
   final Icon? prefixIcon;
   final String? validator;
   final TextEditingController? password;
+  final int maxLines;
+  final void Function()? onTap;
   
   const CustomTextField({
     super.key,
@@ -19,7 +21,9 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType,
     this.prefixIcon,
     this.validator,
-    this.password
+    this.password,
+    this.maxLines = 1,
+    this.onTap,
   });
 
   @override
@@ -58,14 +62,18 @@ class CustomTextField extends StatelessWidget {
         obscureText: showPassword.value ? false : obscureText,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
+          enabledBorder: OutlineInputBorder(
+            borderRadius: const BorderRadius.all(Radius.circular(15)),
+            borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+          ),
           hintText: hintText,
-          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15)), borderSide: BorderSide.none),
-          filled: true,
-          fillColor: Theme.of(context).colorScheme.secondary,
+          border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15))),
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           prefixIcon: prefixIcon,
           suffixIcon: obscureText ? IconButton(onPressed: () => showPassword.value = !showPassword.value, icon: Icon(showPassword.value ? FluentIcons.eye_16_filled : FluentIcons.eye_off_16_filled)) : null,
         ),
+        maxLines: maxLines,
+        onTap: onTap,
       ),
     );
   }

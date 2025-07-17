@@ -49,18 +49,6 @@ class ManageAccountView extends GetView<ManageAccountController> {
                   ),
           
                   const SizedBox(height: 10),
-                  
-                  TextField(
-                    controller: controller.surnameController,
-                    decoration: InputDecoration(
-                      hintText: "Cognome",
-                      filled: true,
-                      fillColor: Theme.of(context).colorScheme.secondary,
-                      border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15)), borderSide: BorderSide.none),
-                    ),
-                  ),
-          
-                  const SizedBox(height: 10),
           
                   const Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,7 +59,7 @@ class ManageAccountView extends GetView<ManageAccountController> {
           
                       Expanded(
                         child: Text(
-                          "L'immagine profilo, il nome e cognome sono pubblici e verranno usati per i commenti e altre interazioni.",
+                          "Il nome è pubblico e verrà usato per le interazioni.",
                           style: TextStyle(color: Palette.labelColor),
                         ),
                       ),

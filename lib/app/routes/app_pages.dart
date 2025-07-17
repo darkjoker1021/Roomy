@@ -2,18 +2,20 @@ import 'package:get/get.dart';
 
 import '../modules/account/bindings/account_binding.dart';
 import '../modules/account/views/account_view.dart';
-import '../modules/create_house/bindings/create_house_binding.dart';
-import '../modules/create_house/views/create_house_view.dart';
-import '../modules/house/bindings/house_binding.dart';
-import '../modules/house/views/house_view.dart';
-import '../modules/join_house/bindings/join_house_binding.dart';
-import '../modules/join_house/views/join_house_view.dart';
+import '../modules/add/bindings/add_binding.dart';
+import '../modules/add/views/add_view.dart';
 import '../modules/login/bindings/login_binding.dart';
 import '../modules/login/views/login_view.dart';
 import '../modules/main/bindings/main_binding.dart';
 import '../modules/main/views/main_view.dart';
 import '../modules/manage_account/bindings/manage_account_binding.dart';
 import '../modules/manage_account/views/manage_account_view.dart';
+import '../modules/manage_house/create_house/bindings/create_house_binding.dart';
+import '../modules/manage_house/create_house/views/create_house_view.dart';
+import '../modules/manage_house/house/bindings/house_binding.dart';
+import '../modules/manage_house/house/views/house_view.dart';
+import '../modules/manage_house/join_house/bindings/join_house_binding.dart';
+import '../modules/manage_house/join_house/views/join_house_view.dart';
 import '../modules/shopping/bindings/shopping_binding.dart';
 import '../modules/shopping/views/shopping_view.dart';
 import '../modules/tasks/bindings/home_binding.dart';
@@ -80,6 +82,11 @@ class AppPages {
       name: _Paths.JOIN_HOUSE,
       page: () => const JoinHouseView(),
       binding: JoinHouseBinding(),
+    ),
+    GetPage(
+      name: _Paths.ADD,
+      page: () => const AddView(),
+      binding: AddBinding(),
     ),
   ];
 }

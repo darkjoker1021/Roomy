@@ -5,7 +5,6 @@ import 'package:roomy/core/widgets/button.dart';
 import 'package:roomy/core/widgets/text_field.dart';
 import 'package:roomy/core/widgets/back_button.dart';
 import 'package:roomy/core/widgets/loading.dart';
-import 'package:roomy/core/widgets/heading.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../controllers/create_house_controller.dart';
 
@@ -16,29 +15,47 @@ class CreateHouseView extends GetView<CreateHouseController> {
   Widget build(BuildContext context) {
     return controller.obx(
       (state) => Scaffold(
-        appBar: AppBar(
-          leading: const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: CustomBackButton(),
+        bottomNavigationBar: BottomAppBar(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: CustomButton(
+            onPressed: () => controller.createHouse(context),
+            text: "Crea casa",
           ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
         ),
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(15),
             child: Form(
               key: controller.createHouseFormKey,
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 20),
-                    
-                    // Titolo e descrizione
-                    const Heading(
-                      title: "Crea una nuova casa",
-                      subtitle: "Configura la tua casa condivisa e inizia a organizzare la convivenza",
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        CustomBackButton(),
+            
+                        SizedBox(width: 10),
+            
+                        Text(
+                          "Crea una nuova casa",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    const Text(
+                      "Configura la tua casa condivisa e inizia a organizzare la convivenza",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Palette.labelColor,
+                      ),
                     ),
                     
                     const SizedBox(height: 40),
@@ -49,13 +66,13 @@ class CreateHouseView extends GetView<CreateHouseController> {
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: Palette.primaryColor.withValues(alpha: 0.1),
+                          color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           FluentIcons.home_add_20_filled,
                           size: 50,
-                          color: Palette.primaryColor,
+                          color: Theme.of(context).iconTheme.color,
                         ),
                       ),
                     ),
@@ -81,36 +98,7 @@ class CreateHouseView extends GetView<CreateHouseController> {
                       keyboardType: TextInputType.streetAddress,
                       prefixIcon: const Icon(FluentIcons.location_16_filled),
                     ),
-                    
-                    const SizedBox(height: 15),
-                    
-                    // Descrizione
-                    TextFormField(
-                      controller: controller.descriptionController,
-                      maxLines: 3,
-                      keyboardType: TextInputType.multiline,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Inserisci una descrizione";
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        hintText: "Descrizione della casa (opzionale)",
-                        border: const OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(15)),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: Theme.of(context).colorScheme.secondary,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 15,
-                        ),
-                        prefixIcon: const Icon(FluentIcons.text_description_16_filled),
-                      ),
-                    ),
-                    
+                                        
                     const SizedBox(height: 20),
                     
                     // Informazioni sui benefici
@@ -118,48 +106,36 @@ class CreateHouseView extends GetView<CreateHouseController> {
                       width: Get.width,
                       padding: const EdgeInsets.all(15),
                       decoration: BoxDecoration(
-                        color: Palette.primaryColor.withValues(alpha: 0.1),
+                        color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
+                          Row(
                             children: [
                               Icon(
                                 FluentIcons.info_16_filled,
-                                color: Palette.primaryColor,
+                                color: Theme.of(context).iconTheme.color,
                                 size: 20,
                               ),
-                              SizedBox(width: 10),
+                              const SizedBox(width: 10),
                               Text(
                                 "Cosa include:",
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: Palette.primaryColor,
+                                  color: Theme.of(context).iconTheme.color,
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 10),
-                          _buildBenefitRow("Codice invito automatico"),
-                          _buildBenefitRow("Gestione spese condivise"),
-                          _buildBenefitRow("Calendario delle pulizie"),
-                          _buildBenefitRow("Lista della spesa collaborativa"),
+                          _buildBenefitRow("Codice invito automatico", context),
+                          _buildBenefitRow("Calendario delle pulizie", context),
+                          _buildBenefitRow("Lista della spesa collaborativa", context),
                         ],
                       ),
                     ),
-                    
-                    const SizedBox(height: 40),
-                    
-                    // Pulsante crea casa
-                    CustomButton(
-                      onPressed: () => controller.createHouse(context),
-                      text: "Crea casa",
-                      height: 55,
-                    ),
-                    
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -171,22 +147,24 @@ class CreateHouseView extends GetView<CreateHouseController> {
     );
   }
 
-  Widget _buildBenefitRow(String text) {
+  Widget _buildBenefitRow(String text, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 5),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             FluentIcons.checkmark_16_filled,
-            color: Palette.primaryColor,
+            color: Theme.of(context).iconTheme.color,
             size: 16,
           ),
-          const SizedBox(width: 8),
+
+          const SizedBox(width: 10),
+
           Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Palette.primaryColor,
+              color: Theme.of(context).iconTheme.color,
             ),
           ),
         ],

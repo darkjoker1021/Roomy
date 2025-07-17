@@ -43,9 +43,9 @@ class JoinHouseController extends GetxController with StateMixin {
 
       // Salva il codice invito per usarlo dopo il login
       Get.toNamed(Routes.LOGIN, arguments: {
-        'action': 'join_house',
+        'action': 'join',
         'inviteCode': inviteCode,
-        'houseName': houseQuery.docs.first.data() as Map<String, dynamic>
+        'houseData': houseQuery.docs.first.data() as Map<String, dynamic>
       });
 
       change(null, status: RxStatus.success());

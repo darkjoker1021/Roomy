@@ -21,9 +21,7 @@ class TasksController extends GetxController {
     'Pulizie',
     'Cucina',
     'Bagno',
-    'Spesa',
     'Manutenzione',
-    'Giardino',
     'Altro'
   ];
 
@@ -43,7 +41,10 @@ class TasksController extends GetxController {
       
       if (savedHouseId != null && savedHouseId.isNotEmpty) {
         houseId.value = savedHouseId;
-        loadTasks();
+        await Future.wait([
+          loadTasks(),
+          loadHouseMembers(), // Carica anche i membri
+        ]);
         return;
       }
 
@@ -62,7 +63,10 @@ class TasksController extends GetxController {
           if (userHouseId != null && userHouseId.isNotEmpty) {
             houseId.value = userHouseId;
             await prefs.setString("houseId", userHouseId);
-            loadTasks();
+            await Future.wait([
+              loadTasks(),
+              loadHouseMembers(), // Carica anche i membri
+            ]);
           } else {
             // L'utente non è in nessuna casa
             Get.snackbar(
@@ -84,7 +88,68 @@ class TasksController extends GetxController {
     }
   }
 
-  void loadTasks() {
+  // Aggiungi queste proprietà alla tua classe TasksController
+  final RxList<Map<String, dynamic>> houseMembers = <Map<String, dynamic>>[].obs;
+  final RxBool isLoadingMembers = false.obs;
+
+  // Modifica il metodo getHouseMembers per essere reactive
+  Future<void> loadHouseMembers() async {
+    if (houseId.value.isEmpty) return;
+
+    try {
+      isLoadingMembers.value = true;
+
+      final membersSnapshot = await _firestore
+          .collection('houses')
+          .doc(houseId.value)
+          .collection('members')
+          .get();
+
+      List<Map<String, dynamic>> loadedMembers = [];
+
+      for (var doc in membersSnapshot.docs) {
+        final uid = doc.id;
+
+        final userDoc = await _firestore.collection('users').doc(uid).get();
+        final userData = userDoc.data() ?? {};
+
+        loadedMembers.add({
+          'uid': uid,
+          'name': (uid == FirebaseAuth.instance.currentUser?.uid ? "${userData['name']}" : userData['name']) ?? 'Membro',
+        });
+      }
+
+      houseMembers.value = loadedMembers;
+    } catch (e) {
+      Get.snackbar(
+        'Errore',
+        'Errore nel caricamento dei membri: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoadingMembers.value = false;
+    }
+  }
+
+
+  // Metodo per ottenere tutti i membri incluso "Tutti"
+  List<Map<String, dynamic>> getAllAssignableMembers() {
+    return [
+      {'name': 'Tutti', 'email': 'tutti@casa', 'isAll': true},
+      ...houseMembers,
+    ];
+  }
+
+  // Metodo per validare se un membro esiste
+  bool isValidMember(String memberName) {
+    if (memberName == 'Tutti') return true;
+    return houseMembers.any((member) => 
+      member['name'] == memberName || member['email'] == memberName
+    );
+  }
+
+  Future<void> loadTasks() async {
     if (houseId.value.isEmpty) return;
     
     isLoading.value = true;

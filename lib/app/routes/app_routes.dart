@@ -12,6 +12,7 @@ abstract class Routes {
   static const HOUSE = _Paths.HOUSE;
   static const CREATE_HOUSE = _Paths.CREATE_HOUSE;
   static const JOIN_HOUSE = _Paths.JOIN_HOUSE;
+  static const ADD = _Paths.ADD;
 }
 
 abstract class _Paths {
@@ -25,4 +26,5 @@ abstract class _Paths {
   static const HOUSE = '/house';
   static const CREATE_HOUSE = '/create-house';
   static const JOIN_HOUSE = '/join-house';
+  static const ADD = '/add';
 }

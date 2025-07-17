@@ -5,7 +5,6 @@ import 'package:roomy/core/widgets/button.dart';
 import 'package:roomy/core/widgets/text_field.dart';
 import 'package:roomy/core/widgets/back_button.dart';
 import 'package:roomy/core/widgets/loading.dart';
-import 'package:roomy/core/widgets/heading.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../controllers/join_house_controller.dart';
 
@@ -16,28 +15,47 @@ class JoinHouseView extends GetView<JoinHouseController> {
   Widget build(BuildContext context) {
     return controller.obx(
       (state) => Scaffold(
-        appBar: AppBar(
-          leading: const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: CustomBackButton(),
+        bottomNavigationBar: BottomAppBar(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: CustomButton(
+            onPressed: () => controller.joinHouseWithCode(context),
+            text: "Continua",
           ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
         ),
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(15),
             child: Form(
               key: controller.joinHouseFormKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 20),
-                  
-                  // Titolo e descrizione
-                  const Heading(
-                    title: "Entra in una casa",
-                    subtitle: "Inserisci il codice invito che hai ricevuto per unirti alla casa",
+                children: [                  
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      CustomBackButton(),
+          
+                      SizedBox(width: 10),
+          
+                      Text(
+                        "Entra in una casa",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+          
+                  const SizedBox(height: 10),
+          
+                  // Descrizione
+                  const Text(
+                    "Per entrare in una casa condivisa, inserisci il codice invito fornito da un amministratore.",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Palette.labelColor,
+                    ),
                   ),
                   
                   const SizedBox(height: 40),
@@ -48,13 +66,13 @@ class JoinHouseView extends GetView<JoinHouseController> {
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
-                        color: Palette.primaryColor.withValues(alpha: 0.1),
+                        color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         FluentIcons.key_16_filled,
                         size: 50,
-                        color: Palette.primaryColor,
+                        color: Theme.of(context).iconTheme.color,
                       ),
                     ),
                   ),
@@ -80,17 +98,6 @@ class JoinHouseView extends GetView<JoinHouseController> {
                       color: Palette.labelColor,
                     ),
                   ),
-                  
-                  const Spacer(),
-                  
-                  // Pulsante continua
-                  CustomButton(
-                    onPressed: () => controller.joinHouseWithCode(context),
-                    text: "Continua",
-                    height: 55,
-                  ),
-                  
-                  const SizedBox(height: 20),
                 ],
               ),
             ),

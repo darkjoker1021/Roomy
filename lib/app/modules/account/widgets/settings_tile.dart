@@ -8,14 +8,15 @@ class SettingsTile extends StatelessWidget {
     required this.title,
     this.subtitle,
     required this.icon,
-    required this.onTap
+    required this.onTap,
+    this.trailing = const Icon(FluentIcons.chevron_right_16_regular),
   });
 
   final String title;
   final String? subtitle;
   final Widget icon;
   final VoidCallback onTap;
-
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +40,7 @@ class SettingsTile extends StatelessWidget {
       ),
       minTileHeight: 60,
       onTap: onTap,
-      trailing: const Icon(FluentIcons.chevron_right_16_regular),
+      trailing: trailing,
     );
   }
 }

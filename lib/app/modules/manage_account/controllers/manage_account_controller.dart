@@ -16,7 +16,6 @@ class ManageAccountController extends GetxController with StateMixin {
     super.onInit();
     change(null, status: RxStatus.success());
     nameController.text = user.name;
-    surnameController.text = user.surname;
   }
 
   Future<void> updateAccount(BuildContext context) async {
@@ -31,7 +30,7 @@ class ManageAccountController extends GetxController with StateMixin {
 
       FirebaseFirestore instance = FirebaseFirestore.instance;
 
-      if (nameController.text != user.name || surnameController.text != user.surname) {
+      if (nameController.text != user.name) {
         await instance.collection("users").doc(uid).update({
           "name": nameController.text,
           "surname": surnameController.text
@@ -39,7 +38,6 @@ class ManageAccountController extends GetxController with StateMixin {
         
         user = AppUser(
           id: uid,
-          surname: surnameController.text,
           name: nameController.text,
           email: user.email,
           points: user.points,
