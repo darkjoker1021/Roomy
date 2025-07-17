@@ -1,5 +1,6 @@
 import 'package:roomy/app/modules/account/controllers/account_controller.dart';
 import 'package:get/get.dart';
+import 'package:roomy/app/modules/add/controllers/add_controller.dart';
 import 'package:roomy/app/modules/shopping/controllers/shopping_controller.dart';
 import 'package:roomy/app/modules/tasks/controllers/tasks_controller.dart';
 
@@ -16,6 +17,9 @@ class MainBinding extends Bindings {
     );
     Get.lazyPut<ShoppingController>(
       () => ShoppingController(),
+    );
+    Get.lazyPut<AddController>(
+      () => AddController(),
     );
     Get.lazyPut<AccountController>(
       () => AccountController(),

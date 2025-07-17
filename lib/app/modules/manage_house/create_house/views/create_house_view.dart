@@ -84,7 +84,7 @@ class CreateHouseView extends GetView<CreateHouseController> {
                       controller: controller.houseNameController,
                       hintText: "Nome della casa",
                       obscureText: false,
-                      keyboardType: TextInputType.text,
+                      keyboardType: TextInputType.streetAddress,
                       prefixIcon: const Icon(FluentIcons.home_16_filled),
                     ),
                     

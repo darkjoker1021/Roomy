@@ -1,5 +1,6 @@
 // widgets/filter_chips_row.dart
 import 'package:flutter/material.dart';
+import 'package:roomy/app/data/lists.dart';
 import '../controllers/tasks_controller.dart';
 
 class FilterChipsRow extends StatelessWidget {
@@ -13,9 +14,9 @@ class FilterChipsRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: controller.categories.length,
+        itemCount: taskCategories.length,
         itemBuilder: (context, index) {
-          final category = controller.categories[index];
+          final category = taskCategories[index];
           final isSelected = controller.selectedCategory.value == category;
 
           return Container(

@@ -16,15 +16,6 @@ class ShoppingController extends GetxController {
   final RxString selectedCategory = 'Tutte'.obs;
   final RxString selectedFilter = 'Tutte'.obs;
   final RxString searchQuery = ''.obs;
-  
-  final List<String> categories = [
-    'Tutte',
-    'Alimentari',
-    'Igiene',
-    'Pulizia',
-    'Bricolage',
-    'Altro'
-  ];
 
   final List<String> filters = ['Tutte', 'Da comprare', 'Acquistate'];
 
@@ -186,7 +177,6 @@ class ShoppingController extends GetxController {
         addedBy: currentUser.displayName ?? currentUser.email ?? 'Utente',
         addedAt: DateTime.now(),
         notes: notes,
-        houseId: houseId.value,
       );
 
       await _firestore

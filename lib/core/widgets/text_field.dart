@@ -61,11 +61,13 @@ class CustomTextField extends StatelessWidget {
         },
         obscureText: showPassword.value ? false : obscureText,
         autovalidateMode: AutovalidateMode.onUserInteraction,
+        keyboardType: keyboardType ?? TextInputType.text,
         decoration: InputDecoration(
           enabledBorder: OutlineInputBorder(
             borderRadius: const BorderRadius.all(Radius.circular(15)),
-            borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+            borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 1),
           ),
+          filled: true,
           hintText: hintText,
           border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(15))),
           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),

@@ -53,9 +53,9 @@ class AppPages {
             binding: ShoppingBinding(),
           ),
           GetPage(
-            name: _Paths.HOUSE,
-            page: () => const HouseView(),
-            binding: HouseBinding(),
+            name: _Paths.ADD,
+            page: () => const AddView(),
+            binding: AddBinding(),
           ),
           GetPage(
             name: _Paths.ACCOUNT,
@@ -82,11 +82,6 @@ class AppPages {
       name: _Paths.JOIN_HOUSE,
       page: () => const JoinHouseView(),
       binding: JoinHouseBinding(),
-    ),
-    GetPage(
-      name: _Paths.ADD,
-      page: () => const AddView(),
-      binding: AddBinding(),
     ),
   ];
 }

@@ -31,8 +31,6 @@ class LoginController extends GetxController with StateMixin {
     if (Get.arguments != null) {
       houseData = Get.arguments['houseData'];
       action = Get.arguments['action']; // 'join' o 'create'
-      fromJoinHouse = Get.arguments['fromJoinHouse'] ?? false;
-      fromCreateHouse = Get.arguments['fromCreateHouse'] ?? false;
     }
   }
 
@@ -108,7 +106,7 @@ class LoginController extends GetxController with StateMixin {
         // Unisci l'utente alla casa
         await _joinUserToHouse(user, houseData!);
         Get.offAndToNamed(Routes.MAIN);
-      } else if (action == 'create' || fromCreateHouse) {
+      } else if (action == 'create') {
         // Vai alla pagina di creazione casa
         Get.offAndToNamed(Routes.CREATE_HOUSE);
       } else {

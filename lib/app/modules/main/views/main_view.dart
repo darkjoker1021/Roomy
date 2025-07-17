@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:roomy/app/modules/account/views/account_view.dart';
+import 'package:roomy/app/modules/add/views/add_view.dart';
 import 'package:roomy/app/modules/shopping/views/shopping_view.dart';
 import 'package:roomy/core/theme/palette.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -17,6 +18,7 @@ class MainView extends GetView<MainController> {
     List<Widget> pages = [
       const TasksView(),
       const ShoppingView(),
+      const AddView(),
       const AccountView(),
     ];
 
@@ -35,6 +37,11 @@ class MainView extends GetView<MainController> {
           inactiveColorPrimary: Palette.labelColor,
         ),
         PersistentBottomNavBarItem(
+          icon: const Icon(FluentIcons.add_20_regular),
+          activeColorPrimary: Palette.buttonColor,
+          inactiveColorPrimary: Palette.labelColor,
+        ),
+        PersistentBottomNavBarItem(
           icon: const Icon(FluentIcons.person_20_regular),
           activeColorPrimary: Palette.buttonColor,
           inactiveColorPrimary: Palette.labelColor,
@@ -42,7 +49,7 @@ class MainView extends GetView<MainController> {
       ],
       stateManagement: false,
       onWillPop: (p0) => exit(0),
-      navBarStyle: NavBarStyle.style16,
+      navBarStyle: NavBarStyle.style12,
       decoration: const NavBarDecoration(
         colorBehindNavBar: Colors.transparent,
         borderRadius: BorderRadius.all(Radius.circular(0)),

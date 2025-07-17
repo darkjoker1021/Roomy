@@ -15,15 +15,6 @@ class TasksController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxString selectedCategory = 'Tutte'.obs;
   final RxString selectedFilter = 'Tutte'.obs;
-  
-  final List<String> categories = [
-    'Tutte',
-    'Pulizie',
-    'Cucina',
-    'Bagno',
-    'Manutenzione',
-    'Altro'
-  ];
 
   final List<String> filters = ['Tutte', 'Da fare', 'Completate'];
 

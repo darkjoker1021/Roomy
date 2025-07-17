@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:roomy/app/data/lists.dart';
 import 'package:roomy/app/data/shopping_item.dart';
+import 'package:roomy/app/routes/app_pages.dart';
 import '../controllers/shopping_controller.dart';
 
 class ShoppingView extends GetView<ShoppingController> {
@@ -62,7 +64,7 @@ class ShoppingView extends GetView<ShoppingController> {
 
   Widget _buildFiltersSection() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(15),
       color: Colors.grey.shade50,
       child: Column(
         children: [
@@ -71,9 +73,9 @@ class ShoppingView extends GetView<ShoppingController> {
             height: 40,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: controller.categories.length,
+              itemCount: productCategories.length,
               itemBuilder: (context, index) {
-                final category = controller.categories[index];
+                final category = productCategories[index];
                 return Obx(() {
                   final isSelected = controller.selectedCategory.value == category;
                   return Padding(
@@ -126,7 +128,7 @@ class ShoppingView extends GetView<ShoppingController> {
 
   Widget _buildSearchBar() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(15),
       child: TextField(
         onChanged: controller.updateSearchQuery,
         decoration: InputDecoration(
@@ -176,7 +178,7 @@ class ShoppingView extends GetView<ShoppingController> {
       }
 
       return ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(15),
         itemCount: controller.filteredItems.length,
         itemBuilder: (context, index) {
           final item = controller.filteredItems[index];
@@ -194,7 +196,7 @@ class ShoppingView extends GetView<ShoppingController> {
         borderRadius: BorderRadius.circular(15),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
+        contentPadding: const EdgeInsets.all(15),
         leading: Checkbox(
           value: item.isPurchased,
           onChanged: (value) {
@@ -270,7 +272,9 @@ class ShoppingView extends GetView<ShoppingController> {
           onSelected: (value) {
             switch (value) {
               case 'edit':
-                _showEditItemDialog(item);
+                Get.toNamed(Routes.ADD, arguments: {
+                  'shopping': item,
+                });
                 break;
               case 'delete':
                 _showDeleteConfirmDialog(item);
@@ -341,7 +345,7 @@ class ShoppingView extends GetView<ShoppingController> {
                         labelText: 'Categoria',
                         border: OutlineInputBorder(),
                       ),
-                      items: controller.categories
+                      items: productCategories
                           .where((cat) => cat != 'Tutte')
                           .map((category) => DropdownMenuItem(
                                 value: category,
@@ -386,99 +390,6 @@ class ShoppingView extends GetView<ShoppingController> {
               }
             },
             child: const Text('Aggiungi'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showEditItemDialog(ShoppingItem item) {
-    final nameController = TextEditingController(text: item.name);
-    final quantityController = TextEditingController(text: item.quantity.toString());
-    final notesController = TextEditingController(text: item.notes ?? '');
-    String selectedCategory = item.category;
-
-    Get.dialog(
-      AlertDialog(
-        title: const Text('Modifica Articolo'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nome articolo *',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: quantityController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Quantità',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: selectedCategory,
-                      decoration: const InputDecoration(
-                        labelText: 'Categoria',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: controller.categories
-                          .where((cat) => cat != 'Tutte')
-                          .map((category) => DropdownMenuItem(
-                                value: category,
-                                child: Text(category),
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        selectedCategory = value ?? 'Altro';
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Note (opzionale)',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 2,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Annulla'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (nameController.text.trim().isNotEmpty) {
-                controller.updateItem(
-                  itemId: item.id,
-                  name: nameController.text.trim(),
-                  quantity: int.tryParse(quantityController.text) ?? 1,
-                  category: selectedCategory,
-                  notes: notesController.text.trim().isNotEmpty
-                      ? notesController.text.trim()
-                      : null,
-                );
-              }
-            },
-            child: const Text('Salva'),
           ),
         ],
       ),

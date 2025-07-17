@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:roomy/app/modules/tasks/widgets/empty_task_placeholder.dart';
-import 'package:roomy/app/modules/tasks/widgets/form_task_modal.dart';
+import 'package:roomy/app/routes/app_pages.dart';
 import '../controllers/tasks_controller.dart';
 import '../widgets/task_card.dart';
 import '../widgets/filter_chips_row.dart';
@@ -37,14 +37,18 @@ class TasksView extends GetView<TasksController> {
               child: controller.filteredTasks.isEmpty
                   ? const EmptyTasksPlaceholder()
                   : ListView.builder(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(15),
                       itemCount: controller.filteredTasks.length,
                       itemBuilder: (context, index) {
                         final task = controller.filteredTasks[index];
                         return TaskCard(
                           task: task,
                           controller: controller,
-                          onEdit: () => showTaskFormModal(context, controller, task: task),
+                          onEdit: () {
+                            Get.toNamed(Routes.ADD, arguments: {
+                              'task': task,
+                            });
+                          },
                           onDelete: () => _showDeleteConfirmation(context, task),
                         );
                       },
@@ -53,11 +57,6 @@ class TasksView extends GetView<TasksController> {
           ],
         );
       }),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => showTaskFormModal(context, controller),
-        backgroundColor: Theme.of(context).primaryColor,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
   }
 
