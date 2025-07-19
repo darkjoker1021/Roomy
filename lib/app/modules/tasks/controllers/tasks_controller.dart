@@ -1,25 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:roomy/app/data/member.dart';
 import 'package:roomy/app/data/task.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class TasksController extends GetxController {
+class TasksController extends GetxController with StateMixin{
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   
   final RxString houseId = ''.obs;
   final RxList<Task> tasks = <Task>[].obs;
   final RxList<Task> filteredTasks = <Task>[].obs;
-  final RxBool isLoading = false.obs;
   final RxnString selectedCategory = RxnString(null);
   final RxnString selectedFilter = RxnString(null);
   final RxnString selectedPriority = RxnString(null);
   final RxnString selectedAssignedTo = RxnString(null);
 
   final List<String> filters = ['Da fare', 'Completate'];
-  final RxList<Map<String, dynamic>> houseMembers = <Map<String, dynamic>>[].obs;
+  final RxList<Member> houseMembers = <Member>[].obs;
   final RxBool isLoadingMembers = false.obs;
 
   @override
@@ -95,18 +95,16 @@ class TasksController extends GetxController {
           .collection('members')
           .get();
 
-      List<Map<String, dynamic>> loadedMembers = [];
+      List<Member> loadedMembers = [];
 
       for (var doc in membersSnapshot.docs) {
         final uid = doc.id;
         final userDoc = await _firestore.collection('users').doc(uid).get();
         final userData = userDoc.data() ?? {};
 
-        loadedMembers.add({
-          'uid': uid,
-          'name': userData['name'] ?? 'Membro',
-          'email': userData['email'] ?? '',
-        });
+        loadedMembers.add(
+          Member.fromJson(userData)
+        );
       }
 
       houseMembers.value = loadedMembers;
@@ -122,21 +120,21 @@ class TasksController extends GetxController {
     }
   }
 
-  List<Map<String, dynamic>> getAllAssignableMembers() {
+  List<Member> getAllAssignableMembers() {
     return houseMembers.toList();
   }
 
   bool isValidMember(String memberName) {
     if (memberName == 'Assegnata a') return true;
     return houseMembers.any((member) => 
-      member['name'] == memberName
+      member.name == memberName
     );
   }
 
   Future<void> loadTasks() async {
     if (houseId.value.isEmpty) return;
     
-    isLoading.value = true;
+    change(null, status: RxStatus.loading());
     
     _firestore
         .collection('houses')
@@ -150,7 +148,7 @@ class TasksController extends GetxController {
             .map((doc) => Task.fromFirestore(doc))
             .toList();
         _applyFilters();
-        isLoading.value = false;
+        change(null, status: RxStatus.success());
       },
       onError: (error) {
         Get.snackbar(
@@ -159,7 +157,7 @@ class TasksController extends GetxController {
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
-        isLoading.value = false;
+        change(null, status: RxStatus.success());
       },
     );
   }
@@ -252,66 +250,6 @@ class TasksController extends GetxController {
     _applyFilters();
   }
 
-  Future<void> addTask({
-    required String title,
-    required String description,
-    required String category,
-    required String assignedTo,
-    DateTime? dueDate,
-    int priority = 1,
-  }) async {
-    if (houseId.value.isEmpty) {
-      Get.snackbar('Errore', 'ID casa non trovato');
-      return;
-    }
-
-    User? currentUser = _auth.currentUser;
-    if (currentUser == null) {
-      Get.snackbar('Errore', 'Utente non autenticato');
-      return;
-    }
-
-    try {
-      isLoading.value = true;
-      
-      final newTask = Task(
-        id: '',
-        title: title,
-        description: description,
-        category: category,
-        createdAt: DateTime.now(),
-        dueDate: dueDate,
-        isCompleted: false,
-        assignedTo: assignedTo,
-        createdBy: currentUser.displayName ?? currentUser.email ?? 'Utente',
-        priority: priority,
-      );
-
-      await _firestore
-          .collection('houses')
-          .doc(houseId.value)
-          .collection('tasks')
-          .add(newTask.toFirestore());
-
-      Get.back();
-      Get.snackbar(
-        'Successo',
-        'Task aggiunta con successo!',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } catch (e) {
-      Get.snackbar(
-        'Errore',
-        'Errore nell\'aggiunta della task: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
   Future<void> toggleTaskCompletion(String taskId, bool isCompleted) async {
     if (houseId.value.isEmpty) return;
 
@@ -366,54 +304,6 @@ class TasksController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-    }
-  }
-
-  Future<void> updateTask({
-    required String taskId,
-    required String title,
-    required String description,
-    required String category,
-    required String assignedTo,
-    DateTime? dueDate,
-    int priority = 1,
-  }) async {
-    if (houseId.value.isEmpty) return;
-
-    try {
-      isLoading.value = true;
-      
-      await _firestore
-          .collection('houses')
-          .doc(houseId.value)
-          .collection('tasks')
-          .doc(taskId)
-          .update({
-        'title': title,
-        'description': description,
-        'category': category,
-        'assignedTo': assignedTo,
-        'dueDate': dueDate != null ? Timestamp.fromDate(dueDate) : null,
-        'priority': priority,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-
-      Get.back();
-      Get.snackbar(
-        'Successo',
-        'Task aggiornata con successo!',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } catch (e) {
-      Get.snackbar(
-        'Errore',
-        'Errore nell\'aggiornamento: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
     }
   }
 

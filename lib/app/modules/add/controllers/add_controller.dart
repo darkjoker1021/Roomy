@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:roomy/app/data/member.dart';
 import 'package:roomy/app/data/shopping_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:roomy/app/data/task.dart';
@@ -36,7 +37,7 @@ class AddController extends GetxController with StateMixin {
   
   // Dati comuni
   final RxString houseId = ''.obs;
-  final RxList<Map<String, dynamic>> houseMembers = <Map<String, dynamic>>[].obs;
+  final RxList<Member> houseMembers = <Member>[].obs;
   final RxBool isLoadingMembers = false.obs;
 
   // Task/ShoppingItem esistente per modifica
@@ -48,29 +49,30 @@ class AddController extends GetxController with StateMixin {
     super.onInit();
     change(null, status: RxStatus.success());
 
-    _initializeData();
+    final args = Get.arguments;
 
-    final args = Get.arguments as Map<String, dynamic>?;
+    if (args != null && args is Map<String, dynamic>) {
+      if (args['page'] == 'task') {
+        addType.value = AddType.task;
+      } else if (args['page'] == 'shopping') {
+        addType.value = AddType.product;
+      }
 
-    if (args != null) {
       if (args['task'] != null) {
-        editingTask = args['task'];
-        initializeForTaskEdit(editingTask!);
+        Task task = args['task'];
+        initializeForTaskEdit(task);
       } else if (args['shopping'] != null) {
-        editingShoppingItem = args['shopping'];
-        initializeForShoppingEdit(editingShoppingItem!);
+        ShoppingItem item = args['shopping'];
+        initializeForShoppingEdit(item);
       }
     }
 
+    _initializeData();
   }
 
   @override
   void onClose() {
-    titleController.dispose();
-    descriptionController.dispose();
-    brandController.dispose();
-    quantityController.dispose();
-    notesController.dispose();
+    _clearForm();
     super.onClose();
   }
 
@@ -130,24 +132,23 @@ class AddController extends GetxController with StateMixin {
           .collection('members')
           .get();
 
-      List<Map<String, dynamic>> loadedMembers = [];
+      List<Member> loadedMembers = [];
 
       for (var doc in membersSnapshot.docs) {
         final uid = doc.id;
         final userDoc = await _firestore.collection('users').doc(uid).get();
         final userData = userDoc.data() ?? {};
 
-        loadedMembers.add({
-          'uid': uid,
-          'name': userData['name'] ?? 'Membro',
-        });
+        loadedMembers.add(Member.fromJson(userData));
       }
 
       houseMembers.value = loadedMembers;
       
       // Imposta il primo membro come selezionato di default
       if (houseMembers.isNotEmpty) {
-        selectedMember.value = houseMembers.first['name'];
+        if (editingTask == null) {
+          selectedMember.value = houseMembers.first.name;
+        }
       }
     } catch (e) {
       Get.snackbar(
@@ -182,7 +183,7 @@ class AddController extends GetxController with StateMixin {
     isPerishable.value = false;
     
     if (houseMembers.isNotEmpty) {
-      selectedMember.value = houseMembers.first['name'];
+      selectedMember.value = houseMembers.first.name;
     }
   }
 
@@ -191,7 +192,7 @@ class AddController extends GetxController with StateMixin {
     addType.value = AddType.task;
     
     titleController.text = task.title;
-    descriptionController.text = task.description;
+    descriptionController.text = task.description ?? '';
     selectedCategory.value = task.category;
     selectedPriority.value = task.priority;
     selectedDueDate.value = task.dueDate;
@@ -203,22 +204,23 @@ class AddController extends GetxController with StateMixin {
     addType.value = AddType.product;
     
     titleController.text = item.name;
-    brandController.text = item.brand!;
+    brandController.text = item.brand ?? '';
     quantityController.text = item.quantity.toString();
     selectedProductCategory.value = item.category;
     selectedExpiryDate.value = item.expiryDate;
-    selectedUnit.value = item.unit!;
+    selectedUnit.value = item.unit ?? 'Pz';
     isPerishable.value = item.isPerishable;
-    notesController.text = item.notes!;
+    notesController.text = item.notes ?? '';
   }
 
   Future<void> saveItem() async {
     if (addType.value == AddType.task) {
-      await _saveTask();
+      _saveTask();
     } else {
-      await _saveProduct();
+      _saveProduct();
     }
     _clearForm();
+    Get.back();
   }
 
   Future<void> _saveTask() async {
@@ -334,39 +336,67 @@ class AddController extends GetxController with StateMixin {
     try {
       change(null, status: RxStatus.loading());
 
-      final shoppingItem = ShoppingItem(
-        id: '',
-        name: titleController.text,
-        brand: brandController.text,
-        category: selectedProductCategory.value,
-        quantity: quantityController.text.isNotEmpty ? int.parse(quantityController.text) : 1,
-        unit: selectedUnit.value,
-        isPerishable: isPerishable.value,
-        expiryDate: selectedExpiryDate.value,
-        notes: notesController.text,
-        addedBy: currentUser.displayName ?? currentUser.email ?? 'Utente',
-        addedAt: DateTime.now(),
-        isPurchased: false,
-        purchasedAt: null,
-        purchasedBy: null,
-      );
+      if (editingShoppingItem != null) {
+        // Modifica prodotto esistente
+        await _firestore
+            .collection('houses')
+            .doc(houseId.value)
+            .collection('shopping')
+            .doc(editingShoppingItem!.id)
+            .update({
+          'name': titleController.text,
+          'brand': brandController.text,
+          'category': selectedProductCategory.value,
+          'quantity': int.parse(quantityController.text),
+          'unit': selectedUnit.value,
+          'isPerishable': isPerishable.value,
+          'expiryDate': selectedExpiryDate.value != null ? Timestamp.fromDate(selectedExpiryDate.value!) : null,
+          'notes': notesController.text,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
 
-      await _firestore
-          .collection('houses')
-          .doc(houseId.value)
-          .collection('shopping')
-          .add(shoppingItem.toFirestore());
+        Get.snackbar(
+          'Successo',
+          'Prodotto aggiornato con successo!',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        // Nuovo prodotto
+        final shoppingItem = ShoppingItem(
+          id: '',
+          name: titleController.text,
+          brand: brandController.text,
+          category: selectedProductCategory.value,
+          quantity: quantityController.text.isNotEmpty ? int.parse(quantityController.text) : 1,
+          unit: selectedUnit.value,
+          isPerishable: isPerishable.value,
+          expiryDate: selectedExpiryDate.value,
+          notes: notesController.text,
+          addedBy: currentUser.displayName ?? currentUser.email ?? 'Utente',
+          addedAt: DateTime.now(),
+          isPurchased: false,
+          purchasedAt: null,
+          purchasedBy: null,
+        );
 
-      Get.snackbar(
-        'Successo',
-        'Prodotto aggiunto con successo!',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
+        await _firestore
+            .collection('houses')
+            .doc(houseId.value)
+            .collection('shopping')
+            .add(shoppingItem.toFirestore());
+
+        Get.snackbar(
+          'Successo',
+          'Prodotto aggiunto con successo!',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      }
     } catch (e) {
       Get.snackbar(
         'Errore',
-        'Errore nell\'aggiunta del prodotto: $e',
+        'Errore nel salvataggio del prodotto: $e',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );

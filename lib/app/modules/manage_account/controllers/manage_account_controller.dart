@@ -3,11 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'package:roomy/app/data/app_user.dart';
+import 'package:roomy/app/data/member.dart';
 import 'package:roomy/core/widgets/snackbar.dart';
 
 class ManageAccountController extends GetxController with StateMixin {
-  var user = Get.arguments as AppUser;
+  var user = Get.arguments as Member;
   var nameController = TextEditingController();
   var surnameController = TextEditingController();
 
@@ -36,11 +36,10 @@ class ManageAccountController extends GetxController with StateMixin {
           "surname": surnameController.text
         });
         
-        user = AppUser(
+        user = Member(
           id: uid,
           name: nameController.text,
           email: user.email,
-          points: user.points,
         );
 
         if (context.mounted) {

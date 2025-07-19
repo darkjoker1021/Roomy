@@ -48,7 +48,7 @@ class TasksFilterChips extends StatelessWidget {
           CustomFilterChip(
             value: controller.selectedAssignedTo.value,
             hint: 'Assegnata a',
-            items: controller.houseMembers.map((m) => m["name"] as String).toList(),
+            items: controller.houseMembers.map((m) => m.name).toList(),
             icon: FluentIcons.people_community_20_filled,
             onChanged: (value) => controller.changeAssignedTo(value),
           ),

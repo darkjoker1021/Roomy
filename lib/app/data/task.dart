@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Task {
   final String id;
   final String title;
-  final String description;
+  final String? description;
   final String category;
   final DateTime createdAt;
   final DateTime? dueDate;
@@ -30,7 +30,7 @@ class Task {
     return Task(
       id: doc.id,
       title: data['title'] ?? '',
-      description: data['description'] ?? '',
+      description: data['description'],
       category: data['category'] ?? '',
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       dueDate: data['dueDate'] != null ? (data['dueDate'] as Timestamp).toDate() : null,

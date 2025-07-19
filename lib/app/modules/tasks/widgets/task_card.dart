@@ -1,4 +1,3 @@
-// widgets/task_card.dart
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -77,10 +76,10 @@ class TaskCard extends StatelessWidget {
             ),
 
             // Descrizione
-            if (task.description.isNotEmpty) ...[
+            if (task.description == null) ...[
               const SizedBox(height: 8),
               Text(
-                task.description,
+                task.description ?? '',
                 style: TextStyle(
                   color: Palette.labelColor,
                   decoration: task.isCompleted ? TextDecoration.lineThrough : null,

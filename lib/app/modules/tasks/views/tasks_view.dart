@@ -1,9 +1,12 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:roomy/app/modules/tasks/widgets/empty_task_placeholder.dart';
+import 'package:roomy/app/data/task.dart';
+import 'package:roomy/core/widgets/empty_placeholder.dart';
 import 'package:roomy/app/routes/app_pages.dart';
+import 'package:roomy/core/widgets/custom_floating_button.dart';
 import 'package:roomy/core/widgets/heading.dart';
+import 'package:roomy/core/widgets/loading.dart';
 import 'package:roomy/core/widgets/statistic_header.dart';
 import '../controllers/tasks_controller.dart';
 import '../widgets/task_card.dart';
@@ -14,21 +17,15 @@ class TasksView extends GetView<TasksController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: () async {
-          controller.refreshTasks();
-        },
-        child: Obx(() {
-          if (controller.isLoading.value && controller.tasks.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          return SafeArea(
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(15),
-              child: Column(
+    return controller.obx((state) =>
+      Scaffold(
+        floatingActionButton: const CustomFloatingButton(task: true),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(15),
+            child: Obx(() =>
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Header con contatore task
@@ -36,27 +33,35 @@ class TasksView extends GetView<TasksController> {
                     title: 'Tasks',
                     subtitle: 'Gestisci le tue task',
                   ),
-
+              
                   const SizedBox(height: 20),
-
+              
                   // Filtri
                   SizedBox(
                     height: 50,
                     child: TasksFilterChips(controller: controller)
                   ),
-
+              
                   const SizedBox(height: 20),
-
+              
                   // Lista task o placeholder vuoto
                   controller.filteredTasks.isEmpty
-                      ? EmptyTasksPlaceholder(controller: controller)
-                      : _buildTasksList(context),
+                    ? EmptyPlaceholder(
+                      task: true,
+                      onPressed: controller.tasks.isNotEmpty
+                      ? () {
+                        controller.resetFilters();
+                      }
+                      : null
+                    )
+                    : _buildTasksList(context),
                 ],
               ),
             ),
-          );
-        }),
+          ),
+        ),
       ),
+      onLoading: const Loading()
     );
   }
 
@@ -88,15 +93,7 @@ class TasksView extends GetView<TasksController> {
             return TaskCard(
               task: task,
               controller: controller,
-              onEdit: () async {
-                final result = await Get.toNamed(
-                  Routes.ADD,
-                  arguments: task,
-                );
-                if (result == true) {
-                  controller.loadTasks();
-                }
-              },
+              onEdit: () => _navigateToEdit(task),
               onDelete: () => _showDeleteConfirmation(context, task),
             );
           },
@@ -105,7 +102,27 @@ class TasksView extends GetView<TasksController> {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, task) {
+  void _navigateToEdit(Task task) {
+    try {
+      Get.toNamed(
+        Routes.ADD,
+        arguments: {
+          'task': task,
+        },
+      )?.then((result) {
+        controller.loadTasks();
+      });
+    } catch (e) {
+      Get.snackbar(
+        'Errore',
+        'Impossibile aprire la pagina di modifica',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  void _showDeleteConfirmation(BuildContext context, Task task) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

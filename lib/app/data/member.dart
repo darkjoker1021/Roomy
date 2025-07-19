@@ -1,16 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class AppUser {
+class Member {
   final String id;
   final String name;
   final String email;
-  final int points;
 
-  AppUser({
+  Member({
     required this.id,
     required this.name,
     required this.email,
-    required this.points,
   });
 
   Map<String, dynamic> toJson() {
@@ -18,19 +16,17 @@ class AppUser {
       "uid": id,
       "name": name,
       "email": email,
-      "points": points,
     };
   }
 
-  AppUser.fromJson(Map<String, dynamic> json)
+  Member.fromJson(Map<String, dynamic> json)
       : id = json['uid'] ?? '',
         name = json['name'] ?? '',
-        email = json['email'] ?? '',
-        points = json['points'] ?? 0;
+        email = json['email'] ?? '';
 }
 
-class UserHelper {
-  Stream<AppUser?> getUser(String id) {
+class MemberHelper {
+  Stream<Member?> getUser(String id) {
     final userStream = FirebaseFirestore.instance
         .collection("users")
         .doc(id)
@@ -41,7 +37,7 @@ class UserHelper {
       final userData = userDoc.data();
       if (userData == null) return null;
 
-      return AppUser.fromJson(userData);
+      return Member.fromJson(userData);
     });
   }
 }

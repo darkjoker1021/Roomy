@@ -38,31 +38,32 @@ class AppPages {
       binding: LoginBinding(),
     ),
     GetPage(
-        name: _Paths.MAIN,
-        page: () => const MainView(),
-        binding: MainBinding(),
-        children: [
-          GetPage(
-            name: _Paths.TASKS,
-            page: () => const TasksView(),
-            binding: TasksBinding(),
-          ),
-          GetPage(
-            name: _Paths.SHOPPING,
-            page: () => const ShoppingView(),
-            binding: ShoppingBinding(),
-          ),
-          GetPage(
-            name: _Paths.ADD,
-            page: () => const AddView(),
-            binding: AddBinding(),
-          ),
-          GetPage(
-            name: _Paths.ACCOUNT,
-            page: () => const AccountView(),
-            binding: AccountBinding(),
-          ),
-        ]),
+      name: _Paths.MAIN,
+      page: () => const MainView(),
+      binding: MainBinding(),
+      children: [
+        GetPage(
+          name: _Paths.TASKS,
+          page: () => const TasksView(),
+          binding: TasksBinding(),
+        ),
+        GetPage(
+          name: _Paths.SHOPPING,
+          page: () => const ShoppingView(),
+          binding: ShoppingBinding(),
+        ),
+        GetPage(
+          name: _Paths.ACCOUNT,
+          page: () => const AccountView(),
+          binding: AccountBinding(),
+        ),
+      ]
+    ),
+    GetPage(
+      name: _Paths.ADD,
+      page: () => const AddView(),
+      binding: AddBinding(),
+    ),
     GetPage(
       name: _Paths.MANAGE_ACCOUNT,
       page: () => const ManageAccountView(),

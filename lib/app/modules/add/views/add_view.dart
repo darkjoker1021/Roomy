@@ -7,6 +7,7 @@ import 'package:roomy/app/data/lists.dart';
 import 'package:roomy/core/theme/palette.dart';
 import 'package:roomy/core/widgets/button.dart';
 import 'package:roomy/core/widgets/dropdown_style.dart';
+import 'package:roomy/core/widgets/heading.dart';
 import 'package:roomy/core/widgets/loading.dart';
 import 'package:roomy/core/widgets/text_field.dart';
 import '../controllers/add_controller.dart';
@@ -18,35 +19,40 @@ class AddView extends GetView<AddController> {
   Widget build(BuildContext context) {
     return controller.obx((state) =>
       Scaffold(
-        appBar: AppBar(
-          title: Obx(() => Text(
-            controller.addType.value == AddType.task 
-              ? (controller.editingTask != null ? 'Modifica Task' : 'Aggiungi Task')
-              : 'Aggiungi Prodotto',
-          )),
-          centerTitle: true,
-        ),
         body: Obx(() {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(15),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Selezione tipo (solo se non stiamo modificando una task)
-                if (controller.editingTask == null) _buildTypeSelector(context),
-                
-                const SizedBox(height: 20),
-                
-                // Form dinamico
-                controller.addType.value == AddType.task
-                  ? _buildTaskForm(context)
-                  : _buildProductForm(context),
-                
-                const SizedBox(height: 30),
-                
-                // Bottone salva
-                _buildSaveButton(context),
-              ],
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Heading(
+                    title: controller.addType.value == AddType.task
+                          ? controller.editingTask != null ? 'Modifica Task' : 'Aggiungi Task'
+                          : controller.editingShoppingItem != null ? 'Modifica Prodotto' : 'Aggiungi Prodotto',
+                    subtitle: controller.addType.value == AddType.task
+                          ? controller.editingTask != null ? 'Modifica la tua Task' : 'Aggiungi una nuova Task'
+                          : controller.editingShoppingItem != null ? 'Modifica il tuo Prodotto' : 'Aggiungi un nuovo Prodotto',
+                    backButton: controller.editingTask != null || controller.editingShoppingItem != null,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  _buildTypeSelector(context),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Form dinamico
+                  controller.addType.value == AddType.task
+                    ? _buildTaskForm(context)
+                    : _buildProductForm(context),
+                  
+                  const SizedBox(height: 30),
+                  
+                  // Bottone salva
+                  _buildSaveButton(context),
+                ],
+              ),
             ),
           );
         }),
@@ -66,7 +72,13 @@ class AddView extends GetView<AddController> {
         children: [
           Expanded(
             child: Obx(() => GestureDetector(
-              onTap: () => controller.changeAddType(AddType.task),
+              onTap: () {
+                if (controller.editingTask != null || controller.editingShoppingItem != null) {
+                  return;
+                } else {
+                  controller.changeAddType(AddType.task);
+                }
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
@@ -102,7 +114,13 @@ class AddView extends GetView<AddController> {
           ),
           Expanded(
             child: Obx(() => GestureDetector(
-              onTap: () => controller.changeAddType(AddType.product),
+              onTap: () {
+                if (controller.editingTask != null || controller.editingShoppingItem != null) {
+                  return;
+                } else {
+                  controller.changeAddType(AddType.product);
+                }
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
@@ -401,9 +419,9 @@ class AddView extends GetView<AddController> {
       }
 
       return DropdownButtonFormField<String>(
-        value: controller.selectedMember.value.isNotEmpty 
-          ? controller.selectedMember.value 
-          : "Tutti i membri",
+        value: controller.selectedMember.value.isNotEmpty
+            ? controller.selectedMember.value
+            : 'Tutti i membri',
         decoration: buildDropdownDecoration(context),
         hint: const Text('Seleziona un membro'),
         items: [
@@ -413,7 +431,7 @@ class AddView extends GetView<AddController> {
               children: [
                 Icon(
                   FluentIcons.people_community_20_filled,
-                  color: Theme.of(context).colorScheme.primary
+                  color: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(width: 8),
                 const Text('Tutti i membri'),
@@ -421,7 +439,8 @@ class AddView extends GetView<AddController> {
             ),
           ),
           ...controller.houseMembers.map((member) {
-            final name = member['name'] ?? 'Membro';
+            final name = member.name;
+            final id = member.id;
 
             return DropdownMenuItem<String>(
               value: name,
@@ -433,7 +452,7 @@ class AddView extends GetView<AddController> {
                     child: Text(
                       name[0].toUpperCase(),
                       style: const TextStyle(
-                        fontSize: 12, 
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -441,14 +460,16 @@ class AddView extends GetView<AddController> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    name, 
-                    style: const TextStyle(fontWeight: FontWeight.w500)
+                    name,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
                   ),
-
                   const SizedBox(width: 8),
-
-                  if (member["uid"] == FirebaseAuth.instance.currentUser?.uid)
-                    const Icon(FluentIcons.person_20_filled, color: Colors.green, size: 16),
+                  if (id == FirebaseAuth.instance.currentUser?.uid)
+                    const Icon(
+                      FluentIcons.person_20_filled,
+                      color: Colors.green,
+                      size: 16,
+                    ),
                 ],
               ),
             );
@@ -516,16 +537,14 @@ class AddView extends GetView<AddController> {
   Widget _buildSaveButton(BuildContext context) {
     return Obx(() => CustomButton(
       onPressed: () => controller.saveItem(),
-      text: controller.addType.value == AddType.task
-          ? (controller.editingTask != null ? 'Salva Modifiche' : 'Aggiungi Task')
-          : 'Aggiungi Prodotto',
+      text: controller.editingTask != null || controller.editingShoppingItem != null
+            ? 'Salva Modifiche'
+            : controller.addType.value == AddType.task ? 'Aggiungi Task' : 'Aggiungi Prodotto',
       icon: controller.addType.value == AddType.task
-          ? const Icon(FluentIcons.task_list_square_ltr_20_filled)
-          : const Icon(FluentIcons.box_20_filled),
+          ? const Icon(FluentIcons.task_list_square_ltr_20_filled, color: Colors.white)
+          : const Icon(FluentIcons.box_20_filled, color: Colors.white),
       backgroundColor: Theme.of(context).colorScheme.primary,
       textColor: Colors.white,
-      width: double.infinity,
-      height: 50,
     ));
   }
 }

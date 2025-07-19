@@ -5,14 +5,13 @@ import 'package:roomy/app/data/shopping_item.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ShoppingController extends GetxController {
+class ShoppingController extends GetxController with StateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   
   final RxString houseId = ''.obs;
   final RxList<ShoppingItem> shoppingItems = <ShoppingItem>[].obs;
   final RxList<ShoppingItem> filteredItems = <ShoppingItem>[].obs;
-  final RxBool isLoading = false.obs;
   final RxnString selectedCategory = RxnString(null);
   final RxnString selectedFilter = RxnString(null);
 
@@ -80,7 +79,7 @@ class ShoppingController extends GetxController {
   void loadShoppingItems() {
     if (houseId.value.isEmpty) return;
     
-    isLoading.value = true;
+    change(null, status: RxStatus.loading());
     
     _firestore
         .collection('houses')
@@ -94,7 +93,7 @@ class ShoppingController extends GetxController {
             .map((doc) => ShoppingItem.fromFirestore(doc))
             .toList();
         _applyFilters();
-        isLoading.value = false;
+        change(null, status: RxStatus.success());
       },
       onError: (error) {
         Get.snackbar(
@@ -103,7 +102,7 @@ class ShoppingController extends GetxController {
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
-        isLoading.value = false;
+        change(null, status: RxStatus.success());
       },
     );
   }
@@ -193,50 +192,6 @@ class ShoppingController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-    }
-  }
-
-  Future<void> updateItem({
-    required String itemId,
-    required String name,
-    required int quantity,
-    required String category,
-    String? notes,
-  }) async {
-    if (houseId.value.isEmpty) return;
-
-    try {
-      isLoading.value = true;
-      
-      await _firestore
-          .collection('houses')
-          .doc(houseId.value)
-          .collection('shopping')
-          .doc(itemId)
-          .update({
-        'name': name,
-        'quantity': quantity,
-        'category': category,
-        'notes': notes,
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
-
-      Get.back();
-      Get.snackbar(
-        'Successo',
-        'Articolo aggiornato!',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } catch (e) {
-      Get.snackbar(
-        'Errore',
-        'Errore nell\'aggiornamento: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
     }
   }
 

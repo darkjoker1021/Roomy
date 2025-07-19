@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:roomy/core/theme/palette.dart';
 import 'package:roomy/core/widgets/button.dart';
+import 'package:roomy/core/widgets/heading.dart';
 import 'package:roomy/core/widgets/text_field.dart';
-import 'package:roomy/core/widgets/back_button.dart';
 import 'package:roomy/core/widgets/loading.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../controllers/join_house_controller.dart';
@@ -30,21 +30,9 @@ class JoinHouseView extends GetView<JoinHouseController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [                  
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      CustomBackButton(),
-          
-                      SizedBox(width: 10),
-          
-                      Text(
-                        "Entra in una casa",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                  const Heading(
+                    title: 'Entra in una casa',
+                    backButton: true,
                   ),
           
                   const SizedBox(height: 10),

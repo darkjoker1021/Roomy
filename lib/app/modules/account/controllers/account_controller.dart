@@ -1,4 +1,4 @@
-import 'package:roomy/app/data/app_user.dart';
+import 'package:roomy/app/data/member.dart';
 import 'package:roomy/app/routes/app_pages.dart';
 import 'package:roomy/core/theme/theme_helper.dart';
 import 'package:roomy/core/widgets/snackbar.dart';
@@ -14,11 +14,10 @@ class AccountController extends GetxController with StateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   
-  var user = AppUser(
+  var user = Member(
     id: "",
     name: "",
     email: "",
-    points: 0,
   ).obs;
   var isDarkMode = false.obs;
   
@@ -27,7 +26,7 @@ class AccountController extends GetxController with StateMixin {
   final RxString houseName = ''.obs;
   final RxString houseInviteCode = ''.obs;
   final RxBool isHouseAdmin = false.obs;
-  final RxList<AppUser> houseMembers = <AppUser>[].obs;
+  final RxList<Member> houseMembers = <Member>[].obs;
   final RxBool isLoadingHouse = false.obs;
 
   @override
@@ -40,7 +39,7 @@ class AccountController extends GetxController with StateMixin {
 
   void _getUserData() {
     change(null, status: RxStatus.loading());
-    UserHelper().getUser(FirebaseAuth.instance.currentUser?.uid ?? "").listen((appUser) {
+    MemberHelper().getUser(FirebaseAuth.instance.currentUser?.uid ?? "").listen((appUser) {
       user.value = appUser!;
     });
     change(null, status: RxStatus.success());
@@ -122,14 +121,13 @@ class AccountController extends GetxController with StateMixin {
           .where('houseId', isEqualTo: houseId.value)
           .get();
 
-      List<AppUser> members = [];
+      List<Member> members = [];
       for (var doc in membersQuery.docs) {
         Map<String, dynamic> userData = doc.data() as Map<String, dynamic>;
-        members.add(AppUser(
+        members.add(Member(
           id: doc.id,
           name: userData['name'] ?? '',
           email: userData['email'] ?? '',
-          points: userData['points'] ?? 0,
         ));
       }
       
@@ -268,7 +266,7 @@ class AccountController extends GetxController with StateMixin {
     }
   }
 
-  Future<void> kickMember(BuildContext context, AppUser member) async {
+  Future<void> kickMember(BuildContext context, Member member) async {
     if (!isHouseAdmin.value) {
       if (context.mounted) {
         CustomSnackbar.showErrorSnackbar(
@@ -365,7 +363,7 @@ class AccountController extends GetxController with StateMixin {
     if (confirm == true) {
       try {
         // Rimuovi l'houseId da tutti i membri
-        for (AppUser member in houseMembers) {
+        for (Member member in houseMembers) {
           await _firestore
               .collection('users')
               .doc(member.id)
