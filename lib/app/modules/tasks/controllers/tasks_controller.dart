@@ -13,10 +13,14 @@ class TasksController extends GetxController {
   final RxList<Task> tasks = <Task>[].obs;
   final RxList<Task> filteredTasks = <Task>[].obs;
   final RxBool isLoading = false.obs;
-  final RxString selectedCategory = 'Tutte'.obs;
-  final RxString selectedFilter = 'Tutte'.obs;
+  final RxnString selectedCategory = RxnString(null);
+  final RxnString selectedFilter = RxnString(null);
+  final RxnString selectedPriority = RxnString(null);
+  final RxnString selectedAssignedTo = RxnString(null);
 
-  final List<String> filters = ['Tutte', 'Da fare', 'Completate'];
+  final List<String> filters = ['Da fare', 'Completate'];
+  final RxList<Map<String, dynamic>> houseMembers = <Map<String, dynamic>>[].obs;
+  final RxBool isLoadingMembers = false.obs;
 
   @override
   void onInit() {
@@ -34,7 +38,7 @@ class TasksController extends GetxController {
         houseId.value = savedHouseId;
         await Future.wait([
           loadTasks(),
-          loadHouseMembers(), // Carica anche i membri
+          loadHouseMembers(),
         ]);
         return;
       }
@@ -56,7 +60,7 @@ class TasksController extends GetxController {
             await prefs.setString("houseId", userHouseId);
             await Future.wait([
               loadTasks(),
-              loadHouseMembers(), // Carica anche i membri
+              loadHouseMembers(),
             ]);
           } else {
             // L'utente non è in nessuna casa
@@ -79,11 +83,6 @@ class TasksController extends GetxController {
     }
   }
 
-  // Aggiungi queste proprietà alla tua classe TasksController
-  final RxList<Map<String, dynamic>> houseMembers = <Map<String, dynamic>>[].obs;
-  final RxBool isLoadingMembers = false.obs;
-
-  // Modifica il metodo getHouseMembers per essere reactive
   Future<void> loadHouseMembers() async {
     if (houseId.value.isEmpty) return;
 
@@ -100,13 +99,13 @@ class TasksController extends GetxController {
 
       for (var doc in membersSnapshot.docs) {
         final uid = doc.id;
-
         final userDoc = await _firestore.collection('users').doc(uid).get();
         final userData = userDoc.data() ?? {};
 
         loadedMembers.add({
           'uid': uid,
-          'name': (uid == FirebaseAuth.instance.currentUser?.uid ? "${userData['name']}" : userData['name']) ?? 'Membro',
+          'name': userData['name'] ?? 'Membro',
+          'email': userData['email'] ?? '',
         });
       }
 
@@ -123,20 +122,14 @@ class TasksController extends GetxController {
     }
   }
 
-
-  // Metodo per ottenere tutti i membri incluso "Tutti"
   List<Map<String, dynamic>> getAllAssignableMembers() {
-    return [
-      {'name': 'Tutti', 'email': 'tutti@casa', 'isAll': true},
-      ...houseMembers,
-    ];
+    return houseMembers.toList();
   }
 
-  // Metodo per validare se un membro esiste
   bool isValidMember(String memberName) {
-    if (memberName == 'Tutti') return true;
+    if (memberName == 'Assegnata a') return true;
     return houseMembers.any((member) => 
-      member['name'] == memberName || member['email'] == memberName
+      member['name'] == memberName
     );
   }
 
@@ -174,28 +167,88 @@ class TasksController extends GetxController {
   void _applyFilters() {
     List<Task> filtered = tasks.toList();
 
+    // Se tutti i filtri sono nulli o vuoti, mostra tutte le task
+    final noCategory = selectedCategory.value == null || selectedCategory.value!.isEmpty;
+    final noFilter = selectedFilter.value == null || selectedFilter.value!.isEmpty;
+    final noPriority = selectedPriority.value == null || selectedPriority.value!.isEmpty;
+    final noAssignedTo = selectedAssignedTo.value == null || selectedAssignedTo.value!.isEmpty;
+
+    if (noCategory && noFilter && noPriority && noAssignedTo) {
+      filteredTasks.value = filtered;
+      return;
+    }
+
     // Filtro per categoria
-    if (selectedCategory.value != 'Tutte') {
+    if (!noCategory) {
       filtered = filtered.where((task) => task.category == selectedCategory.value).toList();
     }
 
     // Filtro per stato
-    if (selectedFilter.value == 'Completate') {
-      filtered = filtered.where((task) => task.isCompleted).toList();
-    } else if (selectedFilter.value == 'Da fare') {
-      filtered = filtered.where((task) => !task.isCompleted).toList();
+    if (!noFilter) {
+      if (selectedFilter.value == 'Completate') {
+        filtered = filtered.where((task) => task.isCompleted).toList();
+      } else if (selectedFilter.value == 'Da fare') {
+        filtered = filtered.where((task) => !task.isCompleted).toList();
+      }
+    }
+
+    // Filtro per priorità
+    if (!noPriority) {
+      final priorityText = selectedPriority.value!;
+      int priorityNumber;
+      switch (priorityText) {
+        case 'Alta':
+          priorityNumber = 3;
+          break;
+        case 'Media':
+          priorityNumber = 2;
+          break;
+        case 'Bassa':
+          priorityNumber = 1;
+          break;
+        default:
+          priorityNumber = -1;
+      }
+
+      if (priorityNumber > 0) {
+        filtered = filtered.where((task) => task.priority == priorityNumber).toList();
+      }
+    }
+
+    // Filtro per assegnazione
+    if (!noAssignedTo) {
+      filtered = filtered.where((task) => task.assignedTo == selectedAssignedTo.value).toList();
     }
 
     filteredTasks.value = filtered;
   }
 
-  void changeCategory(String category) {
+
+  void changeCategory(String? category) {
     selectedCategory.value = category;
     _applyFilters();
   }
 
-  void changeFilter(String filter) {
+  void changeFilter(String? filter) {
     selectedFilter.value = filter;
+    _applyFilters();
+  }
+
+  void changePriority(String? priority) {
+    selectedPriority.value = priority;
+    _applyFilters();
+  }
+
+  void changeAssignedTo(String? assignedTo) {
+    selectedAssignedTo.value = assignedTo;
+    _applyFilters();
+  }
+
+  void resetFilters() {
+    selectedCategory.value = null;
+    selectedFilter.value = null;
+    selectedPriority.value = null;
+    selectedAssignedTo.value = null;
     _applyFilters();
   }
 
@@ -364,31 +417,6 @@ class TasksController extends GetxController {
     }
   }
 
-  // Ottieni lista membri della casa per assegnazione task
-  Future<List<Map<String, dynamic>>> getHouseMembers() async {
-    if (houseId.value.isEmpty) return [];
-
-    try {
-      QuerySnapshot membersSnapshot = await _firestore
-          .collection('houses')
-          .doc(houseId.value)
-          .collection('members')
-          .get();
-
-      return membersSnapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
-    } catch (e) {
-      Get.snackbar(
-        'Errore',
-        'Errore nel caricamento dei membri: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return [];
-    }
-  }
-
   Color getPriorityColor(int priority) {
     switch (priority) {
       case 1:
@@ -412,6 +440,19 @@ class TasksController extends GetxController {
         return 'Alta';
       default:
         return 'Normale';
+    }
+  }
+
+  int getPriorityNumber(String priorityText) {
+    switch (priorityText) {
+      case 'Alta':
+        return 3;
+      case 'Media':
+        return 2;
+      case 'Bassa':
+        return 1;
+      default:
+        return 1;
     }
   }
 

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:roomy/app/data/lists.dart';
+import 'package:roomy/core/theme/palette.dart';
 import 'package:roomy/core/widgets/button.dart';
+import 'package:roomy/core/widgets/dropdown_style.dart';
 import 'package:roomy/core/widgets/loading.dart';
 import 'package:roomy/core/widgets/text_field.dart';
 import '../controllers/add_controller.dart';
@@ -55,9 +57,9 @@ class AddView extends GetView<AddController> {
 
   Widget _buildTypeSelector(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: Theme.of(context).colorScheme.secondary,
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
@@ -69,16 +71,9 @@ class AddView extends GetView<AddController> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: controller.addType.value == AddType.task
-                      ? Colors.white
+                      ? Theme.of(context).colorScheme.primary
                       : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: controller.addType.value == AddType.task
-                      ? [BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        )]
-                      : null,
+                  borderRadius: BorderRadius.circular(15),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -86,8 +81,8 @@ class AddView extends GetView<AddController> {
                     Icon(
                       FluentIcons.task_list_square_ltr_20_filled,
                       color: controller.addType.value == AddType.task
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.grey,
+                          ? Colors.white
+                          : Palette.labelColor,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -96,8 +91,8 @@ class AddView extends GetView<AddController> {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: controller.addType.value == AddType.task
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.grey,
+                            ? Colors.white
+                            : Palette.labelColor,
                       ),
                     ),
                   ],
@@ -112,16 +107,9 @@ class AddView extends GetView<AddController> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: controller.addType.value == AddType.product
-                      ? Colors.white
+                      ? Theme.of(context).colorScheme.primary
                       : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: controller.addType.value == AddType.product
-                      ? [BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        )]
-                      : null,
+                  borderRadius: BorderRadius.circular(15),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -129,8 +117,8 @@ class AddView extends GetView<AddController> {
                     Icon(
                       FluentIcons.box_20_filled,
                       color: controller.addType.value == AddType.product
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.grey,
+                          ? Colors.white
+                          : Palette.labelColor,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -139,8 +127,8 @@ class AddView extends GetView<AddController> {
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: controller.addType.value == AddType.product
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.grey,
+                            ? Colors.white
+                            : Palette.labelColor,
                       ),
                     ),
                   ],
@@ -336,8 +324,8 @@ class AddView extends GetView<AddController> {
   Widget _buildCategoryDropdown(BuildContext context) {
     return Obx(() => DropdownButtonFormField<String>(
       value: controller.selectedCategory.value,
-      decoration: _buildDropdownDecoration(context),
-      items: taskCategories.skip(1).map((category) => 
+      decoration: buildDropdownDecoration(context),
+      items: taskCategories.map((category) => 
         DropdownMenuItem(value: category, child: Text(category))
       ).toList(),
       onChanged: (value) => controller.selectedCategory.value = value!,
@@ -347,8 +335,8 @@ class AddView extends GetView<AddController> {
   Widget _buildProductCategoryDropdown(BuildContext context) {
     return Obx(() => DropdownButtonFormField<String>(
       value: controller.selectedProductCategory.value,
-      decoration: _buildDropdownDecoration(context),
-      items: productCategories.skip(1).map((category) => 
+      decoration: buildDropdownDecoration(context),
+      items: productCategories.map((category) => 
         DropdownMenuItem(value: category, child: Text(category))
       ).toList(),
       onChanged: (value) => controller.selectedProductCategory.value = value!,
@@ -358,7 +346,7 @@ class AddView extends GetView<AddController> {
   Widget _buildUnitDropdown(BuildContext context) {
     return Obx(() => DropdownButtonFormField<String>(
       value: controller.selectedUnit.value,
-      decoration: _buildDropdownDecoration(context),
+      decoration: buildDropdownDecoration(context),
       items: productUnits.map((unit) => 
         DropdownMenuItem(value: unit, child: Text(unit))
       ).toList(),
@@ -369,7 +357,7 @@ class AddView extends GetView<AddController> {
   Widget _buildPriorityDropdown(BuildContext context) {
     return Obx(() => DropdownButtonFormField<int>(
       value: controller.selectedPriority.value,
-      decoration: _buildDropdownDecoration(context),
+      decoration: buildDropdownDecoration(context),
       items: const [
         DropdownMenuItem(
           value: 1,
@@ -416,15 +404,17 @@ class AddView extends GetView<AddController> {
         value: controller.selectedMember.value.isNotEmpty 
           ? controller.selectedMember.value 
           : "Tutti i membri",
-        decoration: _buildDropdownDecoration(context),
+        decoration: buildDropdownDecoration(context),
         hint: const Text('Seleziona un membro'),
         items: [
           DropdownMenuItem<String>(
             value: 'Tutti i membri',
             child: Row(
               children: [
-                Icon(FluentIcons.people_community_20_filled, 
-                  color: Theme.of(context).colorScheme.primary),
+                Icon(
+                  FluentIcons.people_community_20_filled,
+                  color: Theme.of(context).colorScheme.primary
+                ),
                 const SizedBox(width: 8),
                 const Text('Tutti i membri'),
               ],
@@ -496,7 +486,6 @@ class AddView extends GetView<AddController> {
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.secondary,
-          border: Border.all(color: Colors.grey.shade300),
           borderRadius: BorderRadius.circular(15),
         ),
         child: Row(
@@ -538,36 +527,5 @@ class AddView extends GetView<AddController> {
       width: double.infinity,
       height: 50,
     ));
-  }
-  
-  InputDecoration _buildDropdownDecoration(BuildContext context) {
-    return InputDecoration(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
-        borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 1),
-      ),
-      enabledBorder: OutlineInputBorder(  
-        borderRadius: BorderRadius.circular(15),
-        borderSide: BorderSide(color: Theme.of(context).colorScheme.secondary, width: 1),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
-        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
-      ),
-      filled: true,
-      fillColor: Colors.white,
-      hintStyle: TextStyle(color: Colors.grey.shade600),
-      errorStyle: const TextStyle(fontSize: 12),
-      errorMaxLines: 2,
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
-        borderSide: BorderSide(color: Colors.red.shade300),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
-        borderSide: BorderSide(color: Colors.red.shade300),
-      ),
-    );
   }
 }

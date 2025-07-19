@@ -13,11 +13,10 @@ class ShoppingController extends GetxController {
   final RxList<ShoppingItem> shoppingItems = <ShoppingItem>[].obs;
   final RxList<ShoppingItem> filteredItems = <ShoppingItem>[].obs;
   final RxBool isLoading = false.obs;
-  final RxString selectedCategory = 'Tutte'.obs;
-  final RxString selectedFilter = 'Tutte'.obs;
-  final RxString searchQuery = ''.obs;
+  final RxnString selectedCategory = RxnString(null);
+  final RxnString selectedFilter = RxnString(null);
 
-  final List<String> filters = ['Tutte', 'Da comprare', 'Acquistate'];
+  final List<String> filters = ['Da comprare', 'Acquistate'];
 
   @override
   void onInit() {
@@ -27,7 +26,6 @@ class ShoppingController extends GetxController {
     // Listener per i filtri
     ever(selectedCategory, (_) => _applyFilters());
     ever(selectedFilter, (_) => _applyFilters());
-    ever(searchQuery, (_) => _applyFilters());
   }
 
   Future<void> _initializeHouseId() async {
@@ -113,95 +111,46 @@ class ShoppingController extends GetxController {
   void _applyFilters() {
     List<ShoppingItem> filtered = shoppingItems.toList();
 
+    final noCategory = selectedCategory.value == null || selectedCategory.value!.isEmpty;
+    final noFilter = selectedFilter.value == null || selectedFilter.value!.isEmpty;
+
+    // Se nessun filtro attivo → mostra tutto
+    if (noCategory && noFilter) {
+      filteredItems.value = filtered;
+      return;
+    }
+
     // Filtro per categoria
-    if (selectedCategory.value != 'Tutte') {
+    if (!noCategory) {
       filtered = filtered.where((item) => item.category == selectedCategory.value).toList();
     }
 
     // Filtro per stato
-    if (selectedFilter.value == 'Acquistate') {
-      filtered = filtered.where((item) => item.isPurchased).toList();
-    } else if (selectedFilter.value == 'Da comprare') {
-      filtered = filtered.where((item) => !item.isPurchased).toList();
-    }
-
-    // Filtro per ricerca
-    if (searchQuery.value.isNotEmpty) {
-      filtered = filtered.where((item) => 
-          item.name.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-          (item.notes?.toLowerCase().contains(searchQuery.value.toLowerCase()) ?? false)
-      ).toList();
+    if (!noFilter) {
+      if (selectedFilter.value == 'Acquistate') {
+        filtered = filtered.where((item) => item.isPurchased).toList();
+      } else if (selectedFilter.value == 'Da comprare') {
+        filtered = filtered.where((item) => !item.isPurchased).toList();
+      }
     }
 
     filteredItems.value = filtered;
   }
 
-  void changeCategory(String category) {
+  void changeCategory(String? category) {
     selectedCategory.value = category;
+    _applyFilters();
   }
 
-  void changeFilter(String filter) {
+  void changeFilter(String? filter) {
     selectedFilter.value = filter;
+    _applyFilters();
   }
 
-  void updateSearchQuery(String query) {
-    searchQuery.value = query;
-  }
-
-  Future<void> addItem({
-    required String name,
-    int quantity = 1,
-    String category = 'Altro',
-    String? notes,
-  }) async {
-    if (houseId.value.isEmpty) {
-      Get.snackbar('Errore', 'ID casa non trovato');
-      return;
-    }
-
-    User? currentUser = _auth.currentUser;
-    if (currentUser == null) {
-      Get.snackbar('Errore', 'Utente non autenticato');
-      return;
-    }
-
-    try {
-      isLoading.value = true;
-      
-      final newItem = ShoppingItem(
-        id: '',
-        name: name,
-        quantity: quantity,
-        category: category,
-        isPurchased: false,
-        addedBy: currentUser.displayName ?? currentUser.email ?? 'Utente',
-        addedAt: DateTime.now(),
-        notes: notes,
-      );
-
-      await _firestore
-          .collection('houses')
-          .doc(houseId.value)
-          .collection('shopping')
-          .add(newItem.toFirestore());
-
-      Get.back();
-      Get.snackbar(
-        'Successo',
-        'Articolo aggiunto alla lista!',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } catch (e) {
-      Get.snackbar(
-        'Errore',
-        'Errore nell\'aggiunta: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
-    }
+  void resetFilters() {
+    selectedCategory.value = null;
+    selectedFilter.value = null;
+    _applyFilters();
   }
 
   Future<void> togglePurchaseStatus(String itemId, bool isPurchased) async {

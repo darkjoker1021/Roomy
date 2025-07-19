@@ -1,5 +1,4 @@
 final List<String> productCategories = [
-  'Tutte',
   'Alimentari',
   'Igiene',
   'Pulizia',
@@ -33,7 +32,6 @@ final List<String> productUnits = [
 ];
 
 final List<String> taskCategories = [
-  'Tutte',
   'Pulizie',
   'Bucato',
   'Spesa',

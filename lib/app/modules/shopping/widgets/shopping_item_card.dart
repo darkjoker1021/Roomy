@@ -1,19 +1,19 @@
 // widgets/task_card.dart
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:roomy/app/data/task.dart';
+import 'package:roomy/app/data/shopping_item.dart';
+import 'package:roomy/app/modules/shopping/controllers/shopping_controller.dart';
+import 'package:roomy/core/theme/palette.dart';
 import 'package:roomy/core/widgets/button.dart';
-import '../controllers/tasks_controller.dart';
 
-class TaskCard extends StatelessWidget {
-  final Task task;
-  final TasksController controller;
+class ShoppingItemCard extends StatelessWidget {
+  final ShoppingItem item;
+  final ShoppingController controller;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const TaskCard({
-    required this.task,
+  const ShoppingItemCard({
+    required this.item,
     required this.controller,
     required this.onEdit,
     required this.onDelete,
@@ -35,12 +35,12 @@ class TaskCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    task.title,
+                    item.name,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                      color: task.isCompleted ? Colors.grey : null,
+                      decoration: item.isPurchased ? TextDecoration.lineThrough : null,
+                      color: item.isPurchased ? Colors.grey : null,
                     ),
                   ),
                 ),
@@ -51,38 +51,19 @@ class TaskCard extends StatelessWidget {
                     color: Colors.blue.shade100,
                     borderRadius: BorderRadius.circular(15),
                   ),
-                  child: Text(task.category, style: TextStyle(fontSize: 12, color: Colors.blue.shade700)),
-                ),
-
-                const SizedBox(width: 5),
-
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: controller.getPriorityColor(task.priority).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-
-                  child: Text(
-                    controller.getPriorityText(task.priority),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: controller.getPriorityColor(task.priority),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: Text(item.category, style: TextStyle(fontSize: 12, color: Colors.blue.shade700)),
                 ),
               ],
             ),
 
             // Descrizione
-            if (task.description.isNotEmpty) ...[
+            if (item.notes!.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
-                task.description,
+                item.notes ?? "",
                 style: TextStyle(
                   color: Colors.grey.shade600,
-                  decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                  decoration: item.isPurchased ? TextDecoration.lineThrough : null,
                 ),
               ),
             ],
@@ -91,18 +72,23 @@ class TaskCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Assegnato a: ${task.assignedTo}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-
-                if (task.dueDate != null)
-                  Text(
-                    'Scadenza: ${DateFormat('dd/MM/yyyy').format(task.dueDate!)}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: task.dueDate!.isBefore(DateTime.now()) && !task.isCompleted
-                          ? Colors.red
-                          : Colors.grey.shade600,
+                Row(
+                  children: [
+                    const Icon(
+                      FluentIcons.cart_20_filled,
+                      size: 16,
+                      color: Palette.labelColor,
                     ),
-                  ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Qtà: ${item.quantity}',
+                      style: const TextStyle(
+                        color: Palette.labelColor,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
             const SizedBox(height: 15),
@@ -113,15 +99,15 @@ class TaskCard extends StatelessWidget {
                   Expanded(
                     child: CustomButton(
                       height: 40,
-                      onPressed: () => controller.toggleTaskCompletion(task.id, !task.isCompleted),
+                      onPressed: () => controller.togglePurchaseStatus(item.id, !item.isPurchased),
                       icon: Icon(
-                        task.isCompleted ? FluentIcons.arrow_redo_16_filled : FluentIcons.checkmark_20_filled,
-                        size: 20, 
+                        item.isPurchased ? FluentIcons.arrow_redo_16_filled : FluentIcons.checkmark_20_filled,
+                        size: 20,
                         color: Colors.white
                       ),
-                      text: task.isCompleted ? 'Riapri' : 'Completa',
-                      backgroundColor: task.isCompleted ? Colors.orange : Colors.green,
-                      borderColor: task.isCompleted ? Colors.orange : Colors.green,
+                      text: item.isPurchased ? 'Riapri' : 'Acquista',
+                      backgroundColor: item.isPurchased ? Colors.orange : Colors.green,
+                      borderColor: item.isPurchased ? Colors.orange : Colors.green,
                     ),
                   ),
               
