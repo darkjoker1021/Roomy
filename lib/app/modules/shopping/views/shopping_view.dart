@@ -1,3 +1,4 @@
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:roomy/app/data/shopping_item.dart';
@@ -83,7 +84,7 @@ class ShoppingView extends GetView<ShoppingController> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.shopping_basket_outlined,
+                FluentIcons.cart_24_filled,
                 size: 80,
                 color: Colors.grey.shade400,
               ),
@@ -96,11 +97,11 @@ class ShoppingView extends GetView<ShoppingController> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
+              const Text(
                 'Aggiungi il primo articolo!',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey.shade500,
+                  color: Palette.labelColor,
                 ),
               ),
             ],

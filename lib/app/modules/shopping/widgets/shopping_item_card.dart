@@ -1,6 +1,7 @@
 // widgets/task_card.dart
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:roomy/app/data/shopping_item.dart';
 import 'package:roomy/app/modules/shopping/controllers/shopping_controller.dart';
 import 'package:roomy/core/theme/palette.dart';
@@ -56,13 +57,24 @@ class ShoppingItemCard extends StatelessWidget {
               ],
             ),
 
+            if (item.brand!.isNotEmpty) ...[
+              const SizedBox(height: 5),
+              Text(
+                item.brand ?? "",
+                style: TextStyle(
+                  color: Palette.labelColor,
+                  decoration: item.isPurchased ? TextDecoration.lineThrough : null,
+                ),
+              ),
+            ],
+
             // Descrizione
             if (item.notes!.isNotEmpty) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 5),
               Text(
                 item.notes ?? "",
                 style: TextStyle(
-                  color: Colors.grey.shade600,
+                  color: Palette.labelColor,
                   decoration: item.isPurchased ? TextDecoration.lineThrough : null,
                 ),
               ),
@@ -81,12 +93,32 @@ class ShoppingItemCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      'Qtà: ${item.quantity}',
+                      'Qtà: ${item.quantity} ${item.unit}',
                       style: const TextStyle(
                         color: Palette.labelColor,
                         fontSize: 12,
                       ),
                     ),
+
+                    const SizedBox(width: 15),
+
+                    if (item.isPerishable) ...[
+                      const Icon(
+                        FluentIcons.calendar_20_filled,
+                        size: 16,
+                        color: Palette.labelColor,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Scadenza: ${DateFormat('dd/MM/yyyy').format(item.expiryDate!)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: item.expiryDate!.isBefore(DateTime.now()) && !item.isPurchased
+                              ? Colors.red
+                              : Palette.labelColor,
+                        ),
+                      ),
+                    ]
                   ],
                 ),
               ],

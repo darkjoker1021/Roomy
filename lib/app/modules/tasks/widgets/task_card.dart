@@ -3,6 +3,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:roomy/app/data/task.dart';
+import 'package:roomy/core/theme/palette.dart';
 import 'package:roomy/core/widgets/button.dart';
 import '../controllers/tasks_controller.dart';
 
@@ -81,7 +82,7 @@ class TaskCard extends StatelessWidget {
               Text(
                 task.description,
                 style: TextStyle(
-                  color: Colors.grey.shade600,
+                  color: Palette.labelColor,
                   decoration: task.isCompleted ? TextDecoration.lineThrough : null,
                 ),
               ),
@@ -91,7 +92,7 @@ class TaskCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Assegnato a: ${task.assignedTo}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                Text('Assegnato a: ${task.assignedTo}', style: const TextStyle(fontSize: 12, color: Palette.labelColor)),
 
                 if (task.dueDate != null)
                   Text(
@@ -100,7 +101,7 @@ class TaskCard extends StatelessWidget {
                       fontSize: 12,
                       color: task.dueDate!.isBefore(DateTime.now()) && !task.isCompleted
                           ? Colors.red
-                          : Colors.grey.shade600,
+                          : Palette.labelColor,
                     ),
                   ),
               ],
